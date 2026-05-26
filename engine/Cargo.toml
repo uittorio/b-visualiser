@@ -1,0 +1,14 @@
+[package]
+name = "engine"
+version = "0.1.0"
+edition = "2024"
+description = "engine to read raw file data"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = "1.0.228"
+serde-wasm-bindgen = "0.6.5"
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3.98", features = ['Document', 'Element', 'HtmlElement', 'Node', 'Window'] }

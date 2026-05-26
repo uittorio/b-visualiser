@@ -1,0 +1,13 @@
+## MAc
+.DS_Store
+
+## Coding agents
+.claude
+
+## View
+dist
+node_modules
+
+## Engine
+target
+pkg
