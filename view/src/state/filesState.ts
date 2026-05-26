@@ -58,7 +58,7 @@ export const useFileStore = create<FileState>((set, get) => ({
   selectedFile: null,
   rawBytes: null,
   loading: true,
-  bytesRange: { from: 0, to: 200 },
+  bytesRange: { from: 0, to: 1000 },
   error: null,
   selectedByte: null,
   byteDetails: null,

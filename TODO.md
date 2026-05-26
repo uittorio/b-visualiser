@@ -1,5 +1,3 @@
-remove next js.. just vite + react
-DEPLOY
 increase default of characters read, now is 200. move to 500 or add virtual rendering
 Delete files
 virtual rendering for performance
