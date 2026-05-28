@@ -1,5 +1,8 @@
 mod app;
+mod bytes;
 mod events;
+mod files;
+mod mouse_action_sentinel;
 mod state;
 mod ui;
 

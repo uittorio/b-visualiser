@@ -18,7 +18,7 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let Some(details) = &state.byte_details else {
+    let Some(selected_byte) = &state.selected_byte else {
         return;
     };
 
@@ -43,27 +43,31 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState) {
         frame,
         u8_section,
         "u8",
-        &details.be_decimal_8,
-        &details.le_decimal_8,
+        &selected_byte.details.be_decimal_8,
+        &selected_byte.details.le_decimal_8,
     );
-    if let (Some(be_decimal_16), Some(le_decimal_16)) =
-        (&details.be_decimal_16, &details.le_decimal_16)
-    {
+    if let (Some(be_decimal_16), Some(le_decimal_16)) = (
+        &selected_byte.details.be_decimal_16,
+        &selected_byte.details.le_decimal_16,
+    ) {
         render_section(frame, u16_section, "u16", &be_decimal_16, &le_decimal_16);
     }
-    if let (Some(be_decimal_32), Some(le_decimal_32)) =
-        (&details.be_decimal_32, &details.le_decimal_32)
-    {
+    if let (Some(be_decimal_32), Some(le_decimal_32)) = (
+        &selected_byte.details.be_decimal_32,
+        &selected_byte.details.le_decimal_32,
+    ) {
         render_section(frame, u32_section, "u32", &be_decimal_32, &le_decimal_32);
     }
-    if let (Some(be_decimal_64), Some(le_decimal_64)) =
-        (&details.be_decimal_64, &details.le_decimal_64)
-    {
+    if let (Some(be_decimal_64), Some(le_decimal_64)) = (
+        &selected_byte.details.be_decimal_64,
+        &selected_byte.details.le_decimal_64,
+    ) {
         render_section(frame, u64_section, "u64", &be_decimal_64, &le_decimal_64);
     }
-    if let (Some(be_decimal_128), Some(le_decimal_128)) =
-        (&details.be_decimal_128, &details.le_decimal_128)
-    {
+    if let (Some(be_decimal_128), Some(le_decimal_128)) = (
+        &selected_byte.details.be_decimal_128,
+        &selected_byte.details.le_decimal_128,
+    ) {
         render_section(
             frame,
             u128_section,
@@ -72,7 +76,7 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState) {
             &le_decimal_128,
         );
     }
-    render_binary_section(frame, binary_section, &details.binary);
+    render_binary_section(frame, binary_section, &selected_byte.details.binary);
 }
 
 fn render_section(frame: &mut Frame, area: Rect, title: &str, be: &str, le: &str) {
