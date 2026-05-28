@@ -1,33 +1,15 @@
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
 }
 
-#[derive(Serialize)]
-pub struct FileRow {
-    pub bytes: Vec<u8>,
-    pub hexadecimal: Vec<String>,
-}
-
 #[wasm_bindgen]
 pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Result<JsValue, JsError> {
-    let mut result: Vec<FileRow> = vec![];
-
-    let end = (from_byte + length).min(file_bytes.len() as u32);
-    for bytes in file_bytes[(from_byte as usize)..end as usize].chunks(16) {
-        result.push(FileRow {
-            bytes: bytes.to_vec(),
-            hexadecimal: bytes
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect::<Vec<_>>(),
-        });
-    }
-
-    serde_wasm_bindgen::to_value(&result)
+    serde_wasm_bindgen::to_value(&engine::read(file_bytes, from_byte, length))
         .map_err(|e| JsError::new(format!("cannot parse result: {}", e).as_str()))
 }
 

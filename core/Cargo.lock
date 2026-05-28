@@ -15,13 +15,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "core"
+version = "0.1.0"
+
+[[package]]
 name = "engine"
 version = "0.1.0"
 dependencies = [
  "serde",
- "serde-wasm-bindgen",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -203,6 +204,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4e0100b01e9f0d03189a92b96772a1fb998639d981193d7dbab487302513441"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "wasm-engine"
+version = "0.1.0"
+dependencies = [
+ "engine",
+ "serde",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

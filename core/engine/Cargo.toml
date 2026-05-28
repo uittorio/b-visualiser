@@ -1,0 +1,11 @@
+[package]
+name = "engine"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+path = "src/engine.rs"
+
+[dependencies]
+serde = "1.0.228"

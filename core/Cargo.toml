@@ -1,0 +1,10 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2024"
+description = "engine to read raw file data"
+
+[workspace]
+members = ["wasm-engine", "engine"]
+
+[dependencies]
