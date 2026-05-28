@@ -1,10 +1,4 @@
 use serde::Serialize;
-use wasm_bindgen::prelude::*;
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
 
 #[derive(Serialize)]
 pub struct FileRow {
@@ -12,8 +6,7 @@ pub struct FileRow {
     pub hexadecimal: Vec<String>,
 }
 
-#[wasm_bindgen]
-pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Result<JsValue, JsError> {
+pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Vec<FileRow> {
     let mut result: Vec<FileRow> = vec![];
 
     let end = (from_byte + length).min(file_bytes.len() as u32);
@@ -27,8 +20,7 @@ pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Result<JsValue, J
         });
     }
 
-    serde_wasm_bindgen::to_value(&result)
-        .map_err(|e| JsError::new(format!("cannot parse result: {}", e).as_str()))
+    result
 }
 
 #[derive(Serialize)]
@@ -46,8 +38,7 @@ pub struct Details {
     le_decimal_128: Option<String>,
 }
 
-#[wasm_bindgen]
-pub fn details(file_bytes: &[u8], from_byte: u32) -> Result<JsValue, JsError> {
+pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
     let current_byte = file_bytes[from_byte as usize];
     let u8_details = (
         u8::from_ne_bytes([current_byte]),
@@ -74,7 +65,7 @@ pub fn details(file_bytes: &[u8], from_byte: u32) -> Result<JsValue, JsError> {
         .and_then(|b| b.try_into().ok())
         .map(|arr| (u128::from_be_bytes(arr), u128::from_le_bytes(arr)));
 
-    let result = Details {
+    Details {
         binary: format!("{:08b}", current_byte),
         be_decimal_8: format!("{}", u8_details.0).to_string(),
         le_decimal_8: format!("{}", u8_details.1).to_string(),
@@ -86,8 +77,5 @@ pub fn details(file_bytes: &[u8], from_byte: u32) -> Result<JsValue, JsError> {
         le_decimal_64: u64_details.map(|x| x.1).map(|x| format!("{}", x)),
         be_decimal_128: u128_details.map(|x| x.0).map(|x| format!("{}", x)),
         le_decimal_128: u128_details.map(|x| x.1).map(|x| format!("{}", x)),
-    };
-
-    serde_wasm_bindgen::to_value(&result)
-        .map_err(|e| JsError::new(format!("cannot parse result: {}", e).as_str()))
+    }
 }
