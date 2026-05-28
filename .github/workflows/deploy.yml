@@ -22,7 +22,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Build WASM engine
-        run: wasm-pack build engine --target web
+        run: wasm-pack build core/wasm-engine --target web
 
       - name: Install Node deps
         working-directory: view
