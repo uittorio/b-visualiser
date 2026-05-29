@@ -28,7 +28,16 @@ impl LoadedFile {
     }
 
     pub fn set_offset(&mut self, offset: u32) {
-        self.view = engine::read(&self.bytes, offset, self.length);
-        self.offset = offset;
+        self.offset = offset.min(self.bytes.len() as u32);
+        self.update_view();
+    }
+
+    pub fn set_length(&mut self, length: u16) {
+        self.length = length as u32;
+        self.update_view();
+    }
+
+    fn update_view(&mut self) {
+        self.view = engine::read(&self.bytes, self.offset, self.length);
     }
 }

@@ -1,5 +1,3 @@
-pub mod sentinel;
-
 use ratatui::layout::Position;
 use std::time::{Duration, Instant};
 

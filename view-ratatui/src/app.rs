@@ -1,10 +1,10 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
-    events::{self, handle_mouse_sentinel},
+    events::{self, handle_ui_sentinel},
     files::file::LoadedFile,
-    mouse::{Mouse, sentinel::MouseActionSentinel},
+    mouse::Mouse,
     state::AppState,
-    ui,
+    ui::{self, UiSentinel},
 };
 use anyhow::Result;
 use crossterm::event::{Event, KeyEventKind, MouseButton, MouseEventKind};
@@ -28,20 +28,19 @@ impl App {
     }
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
-        let mut action_sentinel = MouseActionSentinel::default();
+        let mut ui_sentinel = UiSentinel::default();
         let mut mouse = Mouse::default();
 
         while !self.state.should_quit {
-            terminal.draw(|frame| ui::draw(frame, &self.state, &mouse, &mut action_sentinel))?;
+            terminal.draw(|frame| ui::draw(frame, &self.state, &mouse, &mut ui_sentinel))?;
 
             mouse.event_consumed();
-            handle_mouse_sentinel(&mut self.state, action_sentinel);
-            action_sentinel = MouseActionSentinel::default();
+            handle_ui_sentinel(&mut self.state, &mut ui_sentinel);
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
                     Event::Mouse(mouse_event) => {
-                        events::handle_mouse(mouse_event, &mut self.state);
+                        events::handle_mouse(mouse_event, &mut self.state, &ui_sentinel);
 
                         match mouse_event.kind {
                             MouseEventKind::Up(mouse_button) => match mouse_button {

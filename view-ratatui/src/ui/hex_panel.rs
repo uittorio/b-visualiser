@@ -1,8 +1,9 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
     files::file::LoadedFile,
-    mouse::{Mouse, MouseEventKind, sentinel::MouseActionSentinel},
+    mouse::{Mouse, MouseEventKind},
     state::{AppState, Focus},
+    ui::UiSentinel,
 };
 use ratatui::{
     Frame,
@@ -17,10 +18,10 @@ pub fn render(
     area: Rect,
     state: &AppState,
     mouse: &Mouse,
-    action_sentinel: &mut MouseActionSentinel,
+    ui_sentinel: &mut UiSentinel,
 ) {
     if area.contains(*mouse.position()) {
-        action_sentinel.change_focus = Some(Focus::HexView);
+        ui_sentinel.change_focus = Some(Focus::HexView);
     }
 
     let focused = state.focus == Focus::HexView;
@@ -36,14 +37,7 @@ pub fn render(
         return;
     };
 
-    render_hex(
-        frame,
-        inner,
-        file,
-        &state.selected_byte,
-        mouse,
-        action_sentinel,
-    );
+    render_hex(frame, inner, file, &state.selected_byte, mouse, ui_sentinel);
 }
 
 fn render_hex(
@@ -52,7 +46,7 @@ fn render_hex(
     file: &LoadedFile,
     selected_byte: &Option<SelectedByteDetails>,
     mouse: &Mouse,
-    action_sentinel: &mut MouseActionSentinel,
+    ui_sentinel: &mut UiSentinel,
 ) {
     let hex_bytes = Paragraph::new(
         file.view
@@ -82,17 +76,13 @@ fn render_hex(
             .collect::<Vec<_>>(),
     );
 
-    listen_mouse(file, &area, mouse, action_sentinel);
-
+    listen_mouse(file, &area, mouse, ui_sentinel);
     frame.render_widget(hex_bytes, area);
+
+    ui_sentinel.hex_panel_height = area.height;
 }
 
-fn listen_mouse(
-    file: &LoadedFile,
-    area: &Rect,
-    mouse: &Mouse,
-    action_sentinel: &mut MouseActionSentinel,
-) {
+fn listen_mouse(file: &LoadedFile, area: &Rect, mouse: &Mouse, ui_sentinel: &mut UiSentinel) {
     let Some(MouseEventKind::Click) = mouse.event_kind() else {
         return;
     };
@@ -129,7 +119,7 @@ fn listen_mouse(
         return;
     }
 
-    action_sentinel.select_byte_offset = Some(y as u32 * 16 + x as u32 + file.offset);
+    ui_sentinel.select_byte_offset = Some(y as u32 * 16 + x as u32 + file.offset);
 }
 
 fn border_style(focused: bool) -> Style {

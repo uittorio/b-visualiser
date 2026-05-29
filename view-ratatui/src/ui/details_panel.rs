@@ -1,6 +1,7 @@
 use crate::{
-    mouse::{Mouse, sentinel::MouseActionSentinel},
+    mouse::Mouse,
     state::{AppState, Focus},
+    ui::UiSentinel,
 };
 use ratatui::{
     Frame,
@@ -16,10 +17,10 @@ pub fn render(
     area: Rect,
     state: &AppState,
     mouse: &Mouse,
-    action_sentinel: &mut MouseActionSentinel,
+    ui_sentinel: &mut UiSentinel,
 ) {
     if area.contains(*mouse.position()) {
-        action_sentinel.change_focus = Some(Focus::Details);
+        ui_sentinel.change_focus = Some(Focus::Details);
     }
 
     let focused = state.focus == Focus::Details;
@@ -122,6 +123,8 @@ pub fn render(
         .drain(..buffer.area().width as usize * state.details_panel.scroll);
     buffer.resize(inner);
     frame.buffer_mut().merge(&buffer);
+
+    ui_sentinel.details_panel_content_height = binary_section.y;
 }
 
 fn render_section(buffer: &mut Buffer, area: Rect, title: &str, be: &str, le: &str) {
