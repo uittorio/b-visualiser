@@ -25,17 +25,17 @@ pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Vec<FileRow> {
 
 #[derive(Serialize)]
 pub struct Details {
-    binary: String,
-    be_decimal_8: String,
-    le_decimal_8: String,
-    be_decimal_16: Option<String>,
-    le_decimal_16: Option<String>,
-    be_decimal_32: Option<String>,
-    le_decimal_32: Option<String>,
-    be_decimal_64: Option<String>,
-    le_decimal_64: Option<String>,
-    be_decimal_128: Option<String>,
-    le_decimal_128: Option<String>,
+    pub binary: String,
+    pub be_decimal_8: String,
+    pub le_decimal_8: String,
+    pub be_decimal_16: Option<String>,
+    pub le_decimal_16: Option<String>,
+    pub be_decimal_32: Option<String>,
+    pub le_decimal_32: Option<String>,
+    pub be_decimal_64: Option<String>,
+    pub le_decimal_64: Option<String>,
+    pub be_decimal_128: Option<String>,
+    pub le_decimal_128: Option<String>,
 }
 
 pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
