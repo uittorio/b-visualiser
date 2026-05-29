@@ -13,6 +13,7 @@ pub struct LoadedFile {
 
 impl LoadedFile {
     pub fn new(path: PathBuf) -> Self {
+        let path = path.canonicalize().expect("Path doesn't exist");
         let file_bytes = std::fs::read(&path).expect("Expected file to exist");
         let offset = 0;
         let length = 200;

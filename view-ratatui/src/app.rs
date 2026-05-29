@@ -16,8 +16,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        let path = PathBuf::from("/media/pmyl/Tardis/Projects/font-rasterizer/Verdana.ttf");
+    pub fn new(filepath: String) -> Self {
+        let path = PathBuf::from(filepath);
 
         let mut state = AppState::new();
         let loaded_file = LoadedFile::new(path);
