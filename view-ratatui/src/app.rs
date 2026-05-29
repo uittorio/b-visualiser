@@ -1,9 +1,8 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
-    events,
+    events::{self, handle_mouse},
     files::file::LoadedFile,
-    mouse::sentinel::MouseActionSentinel,
-    mouse::{Mouse, Position},
+    mouse::{Mouse, Position, sentinel::MouseActionSentinel},
     state::AppState,
     ui,
 };
@@ -36,6 +35,8 @@ impl App {
             terminal.draw(|frame| ui::draw(frame, &self.state, &mouse, &mut action_sentinel))?;
 
             mouse.event_consumed();
+            handle_mouse(&mut self.state, action_sentinel);
+            action_sentinel = MouseActionSentinel::default();
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
@@ -78,6 +79,7 @@ impl App {
                 }
             }
         }
+
         Ok(())
     }
 }

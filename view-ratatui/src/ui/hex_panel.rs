@@ -1,7 +1,7 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
     files::file::LoadedFile,
-    mouse::sentinel::MouseActionSentinel,
+    mouse::{Mouse, MouseEventKind, sentinel::MouseActionSentinel},
     state::{AppState, Focus},
 };
 use ratatui::{
@@ -16,7 +16,8 @@ pub fn render(
     frame: &mut Frame,
     area: Rect,
     state: &AppState,
-    _action_sentinel: &mut MouseActionSentinel,
+    mouse: &Mouse,
+    action_sentinel: &mut MouseActionSentinel,
 ) {
     let focused = state.focus == Focus::HexView;
     let block = Block::new()
@@ -31,7 +32,14 @@ pub fn render(
         return;
     };
 
-    render_hex(frame, inner, file, &state.selected_byte);
+    render_hex(
+        frame,
+        inner,
+        file,
+        &state.selected_byte,
+        mouse,
+        action_sentinel,
+    );
 }
 
 fn render_hex(
@@ -39,6 +47,8 @@ fn render_hex(
     area: Rect,
     file: &LoadedFile,
     selected_byte: &Option<SelectedByteDetails>,
+    mouse: &Mouse,
+    action_sentinel: &mut MouseActionSentinel,
 ) {
     let hex_bytes = Paragraph::new(
         file.view
@@ -68,7 +78,54 @@ fn render_hex(
             .collect::<Vec<_>>(),
     );
 
+    listen_mouse(file, &area, mouse, action_sentinel);
+
     frame.render_widget(hex_bytes, area);
+}
+
+fn listen_mouse(
+    file: &LoadedFile,
+    area: &Rect,
+    mouse: &Mouse,
+    action_sentinel: &mut MouseActionSentinel,
+) {
+    let Some(MouseEventKind::Click) = mouse.event_kind() else {
+        return;
+    };
+
+    let pos = mouse.position();
+
+    // Outside the area
+    if pos.x < area.x
+        || pos.x > area.x + area.width - 1
+        || pos.y < area.y
+        || pos.y > area.y + area.height - 1
+    {
+        return;
+    }
+
+    let adjusted_x = pos.x - area.x;
+    let adjusted_y = pos.y - area.y;
+
+    // On the space between bytes
+    if (adjusted_x + 1) % 3 == 0 {
+        return;
+    }
+
+    let x = (adjusted_x + 1) / 3;
+    let y = adjusted_y;
+
+    // Click on right side of hex grid
+    if x > 15 {
+        return;
+    }
+
+    // Click after hex grid ends
+    if y * 16 + x > file.length as u16 {
+        return;
+    }
+
+    action_sentinel.select_byte_offset = Some(y as u32 * 16 + x as u32 + file.offset);
 }
 
 fn border_style(focused: bool) -> Style {

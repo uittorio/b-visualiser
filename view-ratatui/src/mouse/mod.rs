@@ -26,7 +26,7 @@ pub enum MouseEventKind {
 
 #[derive(Debug)]
 pub struct MouseEvent {
-    kind: MouseEventKind,
+    pub kind: MouseEventKind,
     time: Instant,
 }
 
@@ -61,8 +61,8 @@ impl Mouse {
         &self.position
     }
 
-    pub fn event(&self) -> &Option<MouseEvent> {
-        &self.event
+    pub fn event_kind(&self) -> Option<&MouseEventKind> {
+        self.event.as_ref().map(|e| &e.kind)
     }
 
     pub fn last_event(&self) -> &Option<MouseEvent> {

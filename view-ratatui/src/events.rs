@@ -1,4 +1,7 @@
-use crate::{bytes::selected_byte_details::SelectedByteDetails, state::AppState};
+use crate::{
+    bytes::selected_byte_details::SelectedByteDetails, mouse::sentinel::MouseActionSentinel,
+    state::AppState,
+};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn handle_key(key: KeyEvent, state: &mut AppState) {
@@ -28,6 +31,12 @@ pub fn handle_key_in_hex_panel(key: KeyEvent, state: &mut AppState) {
             update_selected_byte(state, |offset| offset.saturating_add(16));
         }
         _ => {}
+    }
+}
+
+pub fn handle_mouse(state: &mut AppState, action_sentinel: MouseActionSentinel) {
+    if let (Some(selected_byte), Some(file)) = (action_sentinel.select_byte_offset, &state.file) {
+        state.selected_byte = Some(SelectedByteDetails::new(&file.bytes, selected_byte));
     }
 }
 
