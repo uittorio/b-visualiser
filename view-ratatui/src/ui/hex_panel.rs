@@ -21,7 +21,7 @@ pub fn render(
     ui_sentinel: &mut UiSentinel,
 ) {
     if area.contains(*mouse.position()) {
-        ui_sentinel.change_focus = Some(Focus::HexView);
+        ui_sentinel.change_hover = Some(Focus::HexView);
     }
 
     let focused = state.focus == Focus::HexView;
@@ -61,7 +61,8 @@ fn render_hex(
                         .flat_map(|(x, h)| {
                             vec![
                                 if let Some(selected_byte) = selected_byte
-                                    && selected_byte.offset as usize == y * 16 + x
+                                    && selected_byte.offset as usize
+                                        == y * 16 + x + file.offset as usize
                                 {
                                     Span::from(h).style(Style::new().on_light_blue())
                                 } else {

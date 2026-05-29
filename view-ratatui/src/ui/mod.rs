@@ -1,6 +1,7 @@
 pub mod bottom_bar;
 pub mod details_panel;
 pub mod hex_panel;
+pub mod search_bar;
 
 use crate::{
     mouse::Mouse,
@@ -20,12 +21,14 @@ pub fn draw(frame: &mut Frame, state: &AppState, mouse: &Mouse, ui_sentinel: &mu
     hex_panel::render(frame, left, state, mouse, ui_sentinel);
     details_panel::render(frame, right, state, mouse, ui_sentinel);
     bottom_bar::render(frame, bottom, state, mouse);
+    search_bar::render(frame, frame.area(), state);
 }
 
 #[derive(Default)]
 pub struct UiSentinel {
     pub select_byte_offset: Option<u32>,
     pub change_focus: Option<Focus>,
+    pub change_hover: Option<Focus>,
     pub hex_panel_height: u16,
     pub details_panel_content_height: u16,
 }

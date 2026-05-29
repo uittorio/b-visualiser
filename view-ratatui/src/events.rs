@@ -1,4 +1,8 @@
-use crate::{bytes::selected_byte_details::SelectedByteDetails, state::AppState, ui::UiSentinel};
+use crate::{
+    bytes::selected_byte_details::SelectedByteDetails,
+    state::{AppState, Focus},
+    ui::UiSentinel,
+};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 
 pub fn handle_key(key: KeyEvent, state: &mut AppState) {
@@ -9,7 +13,12 @@ pub fn handle_key(key: KeyEvent, state: &mut AppState) {
         }
         KeyCode::BackTab => state.cycle_focus_backwards(),
         KeyCode::Tab => state.cycle_focus(),
-        _ => {}
+        KeyCode::Char('/') if state.focus != Focus::Search => state.focus = Focus::Search,
+        _ => match state.focus {
+            Focus::HexView => handle_key_in_hex_panel(key, state),
+            Focus::Details => {}
+            Focus::Search => handle_key_in_search(key, state),
+        },
     }
 }
 
@@ -31,18 +40,115 @@ pub fn handle_key_in_hex_panel(key: KeyEvent, state: &mut AppState) {
     }
 }
 
+pub fn handle_key_in_search(key: KeyEvent, state: &mut AppState) {
+    match key.code {
+        KeyCode::Esc => state.focus = Focus::HexView,
+        KeyCode::Enter => state.focus = Focus::HexView,
+        KeyCode::Char(c) => {
+            let (prev, after) = state
+                .search_term
+                .split_at(state.search_cursor_position as usize);
+            state.search_term = format!("{}{}{}", prev, c, after);
+            state.search_cursor_position =
+                (state.search_cursor_position + 1).min(state.search_term.len() as u32);
+        }
+        KeyCode::Right => {
+            state.search_cursor_position =
+                (state.search_cursor_position + 1).min(state.search_term.len() as u32);
+        }
+        KeyCode::Left => {
+            state.search_cursor_position = state.search_cursor_position.saturating_sub(1);
+        }
+        KeyCode::Home => {
+            state.search_cursor_position = 0;
+        }
+        KeyCode::End => {
+            state.search_cursor_position = state.search_term.len() as u32;
+        }
+        KeyCode::Backspace => {
+            if state.search_cursor_position == 0 {
+                return;
+            }
+            if key.modifiers.contains(KeyModifiers::CONTROL) {
+                let (_, new_term) = state
+                    .search_term
+                    .split_at(state.search_cursor_position as usize);
+                state.search_term = new_term.to_string();
+                state.search_cursor_position = 0;
+            } else {
+                state.search_cursor_position = state.search_cursor_position.saturating_sub(1);
+                state
+                    .search_term
+                    .remove(state.search_cursor_position as usize);
+            }
+        }
+        KeyCode::Delete => {
+            if state.search_cursor_position == state.search_term.len() as u32 {
+                return;
+            }
+            if key.modifiers == KeyModifiers::CONTROL {
+                let (new_term, _) = state
+                    .search_term
+                    .split_at(state.search_cursor_position as usize);
+                state.search_term = new_term.to_string();
+            } else {
+                state
+                    .search_term
+                    .remove(state.search_cursor_position as usize);
+            }
+        }
+        _ => {}
+    }
+}
+
 pub fn handle_ui_sentinel(state: &mut AppState, ui_sentinel: &mut UiSentinel) {
     if let (Some(selected_byte), Some(file)) = (ui_sentinel.select_byte_offset.take(), &state.file)
+        && state.focus == Focus::HexView
     {
         state.selected_byte = Some(SelectedByteDetails::new(&file.bytes, selected_byte));
     }
 
-    if let Some(focus) = ui_sentinel.change_focus.take() {
+    if let Some(focus) = ui_sentinel.change_focus.take()
+        && state.focus != Focus::Search
+    {
         state.focus = focus;
+    }
+
+    if let Some(hover) = ui_sentinel.change_hover.take() {
+        state.hover = hover;
     }
 
     if let Some(file) = state.file.as_mut() {
         file.set_length(ui_sentinel.hex_panel_height * 16);
+    }
+}
+
+pub fn handle_mouse(mouse_event: MouseEvent, state: &mut AppState, ui_sentinel: &UiSentinel) {
+    match mouse_event.kind {
+        MouseEventKind::ScrollDown => match state.hover {
+            Focus::HexView => {
+                if let Some(file) = state.file.as_mut() {
+                    file.set_offset(file.offset + 16);
+                }
+            }
+            Focus::Details => {
+                state.details_panel.scroll = (state.details_panel.scroll + 1)
+                    .min(ui_sentinel.details_panel_content_height as usize)
+            }
+            Focus::Search => {}
+        },
+        MouseEventKind::ScrollUp => match state.hover {
+            Focus::HexView => {
+                if let Some(file) = state.file.as_mut() {
+                    file.set_offset(file.offset.saturating_sub(16));
+                }
+            }
+            Focus::Details => {
+                state.details_panel.scroll = state.details_panel.scroll.saturating_sub(1)
+            }
+            Focus::Search => {}
+        },
+        _ => {}
     }
 }
 
@@ -56,31 +162,4 @@ fn update_selected_byte<F: FnOnce(u32) -> u32>(state: &mut AppState, update_offs
         0
     };
     state.selected_byte = Some(SelectedByteDetails::new(&file.bytes, target_offset));
-}
-
-pub fn handle_mouse(mouse_event: MouseEvent, state: &mut AppState, ui_sentinel: &UiSentinel) {
-    match mouse_event.kind {
-        MouseEventKind::ScrollDown => match state.focus {
-            crate::state::Focus::HexView => {
-                if let Some(file) = state.file.as_mut() {
-                    file.set_offset(file.offset + 16);
-                }
-            }
-            crate::state::Focus::Details => {
-                state.details_panel.scroll = (state.details_panel.scroll + 1)
-                    .min(ui_sentinel.details_panel_content_height as usize)
-            }
-        },
-        MouseEventKind::ScrollUp => match state.focus {
-            crate::state::Focus::HexView => {
-                if let Some(file) = state.file.as_mut() {
-                    file.set_offset(file.offset.saturating_sub(16));
-                }
-            }
-            crate::state::Focus::Details => {
-                state.details_panel.scroll = state.details_panel.scroll.saturating_sub(1)
-            }
-        },
-        _ => {}
-    }
 }

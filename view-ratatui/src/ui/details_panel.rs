@@ -20,7 +20,7 @@ pub fn render(
     ui_sentinel: &mut UiSentinel,
 ) {
     if area.contains(*mouse.position()) {
-        ui_sentinel.change_focus = Some(Focus::Details);
+        ui_sentinel.change_hover = Some(Focus::Details);
     }
 
     let focused = state.focus == Focus::Details;

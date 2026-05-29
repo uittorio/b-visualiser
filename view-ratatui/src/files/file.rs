@@ -15,7 +15,7 @@ impl LoadedFile {
     pub fn new(path: PathBuf) -> Self {
         let file_bytes = std::fs::read(&path).expect("Expected file to exist");
         let offset = 0;
-        let length = 1000;
+        let length = 200;
 
         Self {
             path: path.to_string_lossy().to_string(),
@@ -33,6 +33,10 @@ impl LoadedFile {
     }
 
     pub fn set_length(&mut self, length: u16) {
+        if length as u32 == self.length {
+            return;
+        }
+
         self.length = length as u32;
         self.update_view();
     }

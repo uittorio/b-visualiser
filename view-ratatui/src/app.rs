@@ -7,8 +7,8 @@ use crate::{
     ui::{self, UiSentinel},
 };
 use anyhow::Result;
-use crossterm::event::{Event, KeyEventKind, MouseButton, MouseEventKind};
-use ratatui::{DefaultTerminal, layout::Position};
+use crossterm::event::{Event, KeyEventKind};
+use ratatui::DefaultTerminal;
 use std::{path::PathBuf, time::Duration};
 
 pub struct App {
@@ -41,41 +41,11 @@ impl App {
                 match crossterm::event::read()? {
                     Event::Mouse(mouse_event) => {
                         events::handle_mouse(mouse_event, &mut self.state, &ui_sentinel);
-
-                        match mouse_event.kind {
-                            MouseEventKind::Up(mouse_button) => match mouse_button {
-                                MouseButton::Left => {
-                                    mouse.set_event(crate::mouse::MouseEventKind::Click);
-                                }
-                                MouseButton::Right => {
-                                    mouse.set_event(crate::mouse::MouseEventKind::RightClick);
-                                }
-                                _ => {}
-                            },
-                            MouseEventKind::Moved => {
-                                mouse.set_position(Position {
-                                    x: mouse_event.column,
-                                    y: mouse_event.row,
-                                });
-                            }
-                            MouseEventKind::ScrollDown => {
-                                mouse.set_event(crate::mouse::MouseEventKind::ScrollDown);
-                            }
-                            MouseEventKind::ScrollUp => {
-                                mouse.set_event(crate::mouse::MouseEventKind::ScrollUp);
-                            }
-                            _ => {}
-                        }
+                        mouse.store_event(mouse_event);
                     }
                     Event::Key(key) => {
                         if key.kind == KeyEventKind::Press {
                             events::handle_key(key, &mut self.state);
-                            match self.state.focus {
-                                crate::state::Focus::HexView => {
-                                    events::handle_key_in_hex_panel(key, &mut self.state)
-                                }
-                                crate::state::Focus::Details => {}
-                            }
                         }
                     }
                     _ => {}

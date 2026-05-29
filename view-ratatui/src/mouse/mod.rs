@@ -69,4 +69,31 @@ impl Mouse {
 
         self.last_event = self.event.take();
     }
+
+    pub fn store_event(&mut self, mouse_event: crossterm::event::MouseEvent) {
+        match mouse_event.kind {
+            crossterm::event::MouseEventKind::Up(mouse_button) => match mouse_button {
+                crossterm::event::MouseButton::Left => {
+                    self.set_event(crate::mouse::MouseEventKind::Click);
+                }
+                crossterm::event::MouseButton::Right => {
+                    self.set_event(crate::mouse::MouseEventKind::RightClick);
+                }
+                _ => {}
+            },
+            crossterm::event::MouseEventKind::Moved => {
+                self.set_position(Position {
+                    x: mouse_event.column,
+                    y: mouse_event.row,
+                });
+            }
+            crossterm::event::MouseEventKind::ScrollDown => {
+                self.set_event(crate::mouse::MouseEventKind::ScrollDown);
+            }
+            crossterm::event::MouseEventKind::ScrollUp => {
+                self.set_event(crate::mouse::MouseEventKind::ScrollUp);
+            }
+            _ => {}
+        }
+    }
 }
