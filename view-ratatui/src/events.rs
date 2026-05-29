@@ -43,7 +43,19 @@ pub fn handle_key_in_hex_panel(key: KeyEvent, state: &mut AppState) {
 pub fn handle_key_in_search(key: KeyEvent, state: &mut AppState) {
     match key.code {
         KeyCode::Esc => state.focus = Focus::HexView,
-        KeyCode::Enter => state.focus = Focus::HexView,
+        KeyCode::Enter => {
+            if let Some(file) = &state.file {
+                let search_term_bytes = state.search_term.as_bytes();
+                if let Some(pos) = file
+                    .bytes
+                    .windows(search_term_bytes.len())
+                    .position(|w| w == search_term_bytes)
+                {
+                    state.select_byte(pos as u32);
+                }
+            }
+            state.focus = Focus::HexView;
+        }
         KeyCode::Char(c) => {
             let (prev, after) = state
                 .search_term
@@ -153,13 +165,10 @@ pub fn handle_mouse(mouse_event: MouseEvent, state: &mut AppState, ui_sentinel: 
 }
 
 fn update_selected_byte<F: FnOnce(u32) -> u32>(state: &mut AppState, update_offset: F) {
-    let Some(file) = &state.file else {
-        return;
-    };
     let target_offset = if let Some(selected_byte) = state.selected_byte.as_mut() {
         update_offset(selected_byte.offset)
     } else {
         0
     };
-    state.selected_byte = Some(SelectedByteDetails::new(&file.bytes, target_offset));
+    state.select_byte(target_offset);
 }

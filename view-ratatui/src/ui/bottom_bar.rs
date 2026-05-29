@@ -19,10 +19,11 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, mouse: &Mouse) {
 
     let line = if let Some(file) = &state.file {
         Line::from(format!(
-            "{} · Offset {} · Length {} · {}",
+            "{} · View ({}, {}) · Selected {} · {}",
             file.path,
             file.offset,
             file.length,
+            state.selected_byte.as_ref().map(|s| s.offset).unwrap_or(0),
             mouse_text(mouse)
         ))
     } else {

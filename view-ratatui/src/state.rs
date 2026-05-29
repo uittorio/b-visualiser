@@ -51,6 +51,19 @@ impl AppState {
             _ => self.focus,
         };
     }
+
+    pub fn select_byte(&mut self, offset: u32) {
+        let Some(file) = self.file.as_mut() else {
+            return;
+        };
+
+        self.selected_byte = Some(SelectedByteDetails::new(&file.bytes, offset));
+        if offset >= file.offset + file.length {
+            file.set_offset((offset + 1).div_ceil(16) * 16 - (file.view.len() as u32) * 16);
+        } else if offset < file.offset {
+            file.set_offset((offset / 16) * 16);
+        }
+    }
 }
 
 pub struct DetailsPanel {

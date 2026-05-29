@@ -37,7 +37,15 @@ pub fn render(
         return;
     };
 
-    render_hex(frame, inner, file, &state.selected_byte, mouse, ui_sentinel);
+    render_hex(
+        frame,
+        inner,
+        file,
+        &state.selected_byte,
+        focused,
+        mouse,
+        ui_sentinel,
+    );
 }
 
 fn render_hex(
@@ -45,9 +53,16 @@ fn render_hex(
     area: Rect,
     file: &LoadedFile,
     selected_byte: &Option<SelectedByteDetails>,
+    focused: bool,
     mouse: &Mouse,
     ui_sentinel: &mut UiSentinel,
 ) {
+    let selected_style = if focused {
+        Style::new().on_light_blue()
+    } else {
+        Style::new().on_dark_gray()
+    };
+
     let hex_bytes = Paragraph::new(
         file.view
             .iter()
@@ -64,7 +79,7 @@ fn render_hex(
                                     && selected_byte.offset as usize
                                         == y * 16 + x + file.offset as usize
                                 {
-                                    Span::from(h).style(Style::new().on_light_blue())
+                                    Span::from(h).style(selected_style)
                                 } else {
                                     Span::from(h)
                                 },
