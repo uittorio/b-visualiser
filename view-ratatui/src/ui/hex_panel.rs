@@ -19,6 +19,10 @@ pub fn render(
     mouse: &Mouse,
     action_sentinel: &mut MouseActionSentinel,
 ) {
+    if area.contains(*mouse.position()) {
+        action_sentinel.change_focus = Some(Focus::HexView);
+    }
+
     let focused = state.focus == Focus::HexView;
     let block = Block::new()
         .title(" Hex View ")

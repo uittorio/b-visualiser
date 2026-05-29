@@ -20,6 +20,6 @@ pub fn draw(
     let [left, right] = Layout::horizontal([Constraint::Fill(1), Constraint::Max(45)]).areas(top);
 
     hex_panel::render(frame, left, state, mouse, action_sentinel);
-    details_panel::render(frame, right, state);
+    details_panel::render(frame, right, state, mouse, action_sentinel);
     bottom_bar::render(frame, bottom, state, mouse);
 }

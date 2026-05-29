@@ -1,5 +1,6 @@
 pub mod sentinel;
 
+use ratatui::layout::Position;
 use std::time::{Duration, Instant};
 
 #[derive(Default)]
@@ -7,12 +8,6 @@ pub struct Mouse {
     position: Position,
     event: Option<MouseEvent>,
     last_event: Option<MouseEvent>,
-}
-
-#[derive(Default)]
-pub struct Position {
-    pub x: u16,
-    pub y: u16,
 }
 
 #[derive(Debug)]

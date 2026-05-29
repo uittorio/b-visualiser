@@ -1,14 +1,14 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
-    events::{self, handle_mouse},
+    events::{self, handle_mouse_sentinel},
     files::file::LoadedFile,
-    mouse::{Mouse, Position, sentinel::MouseActionSentinel},
+    mouse::{Mouse, sentinel::MouseActionSentinel},
     state::AppState,
     ui,
 };
 use anyhow::Result;
 use crossterm::event::{Event, KeyEventKind, MouseButton, MouseEventKind};
-use ratatui::DefaultTerminal;
+use ratatui::{DefaultTerminal, layout::Position};
 use std::{path::PathBuf, time::Duration};
 
 pub struct App {
@@ -35,35 +35,39 @@ impl App {
             terminal.draw(|frame| ui::draw(frame, &self.state, &mouse, &mut action_sentinel))?;
 
             mouse.event_consumed();
-            handle_mouse(&mut self.state, action_sentinel);
+            handle_mouse_sentinel(&mut self.state, action_sentinel);
             action_sentinel = MouseActionSentinel::default();
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
-                    Event::Mouse(mouse_event) => match mouse_event.kind {
-                        MouseEventKind::Up(mouse_button) => match mouse_button {
-                            MouseButton::Left => {
-                                mouse.set_event(crate::mouse::MouseEventKind::Click);
+                    Event::Mouse(mouse_event) => {
+                        events::handle_mouse(mouse_event, &mut self.state);
+
+                        match mouse_event.kind {
+                            MouseEventKind::Up(mouse_button) => match mouse_button {
+                                MouseButton::Left => {
+                                    mouse.set_event(crate::mouse::MouseEventKind::Click);
+                                }
+                                MouseButton::Right => {
+                                    mouse.set_event(crate::mouse::MouseEventKind::RightClick);
+                                }
+                                _ => {}
+                            },
+                            MouseEventKind::Moved => {
+                                mouse.set_position(Position {
+                                    x: mouse_event.column,
+                                    y: mouse_event.row,
+                                });
                             }
-                            MouseButton::Right => {
-                                mouse.set_event(crate::mouse::MouseEventKind::RightClick);
+                            MouseEventKind::ScrollDown => {
+                                mouse.set_event(crate::mouse::MouseEventKind::ScrollDown);
+                            }
+                            MouseEventKind::ScrollUp => {
+                                mouse.set_event(crate::mouse::MouseEventKind::ScrollUp);
                             }
                             _ => {}
-                        },
-                        MouseEventKind::Moved => {
-                            mouse.set_position(Position {
-                                x: mouse_event.column,
-                                y: mouse_event.row,
-                            });
                         }
-                        MouseEventKind::ScrollDown => {
-                            mouse.set_event(crate::mouse::MouseEventKind::ScrollDown);
-                        }
-                        MouseEventKind::ScrollUp => {
-                            mouse.set_event(crate::mouse::MouseEventKind::ScrollUp);
-                        }
-                        _ => {}
-                    },
+                    }
                     Event::Key(key) => {
                         if key.kind == KeyEventKind::Press {
                             events::handle_key(key, &mut self.state);

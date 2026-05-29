@@ -12,6 +12,8 @@ pub struct AppState {
 
     pub file: Option<LoadedFile>,
     pub selected_byte: Option<SelectedByteDetails>,
+
+    pub details_panel: DetailsPanel,
 }
 
 impl AppState {
@@ -22,6 +24,8 @@ impl AppState {
 
             file: None,
             selected_byte: None,
+
+            details_panel: DetailsPanel { scroll: 0 },
         }
     }
 
@@ -38,4 +42,8 @@ impl AppState {
             Focus::Details => Focus::HexView,
         };
     }
+}
+
+pub struct DetailsPanel {
+    pub scroll: usize,
 }
