@@ -1,7 +1,7 @@
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
     files::file::LoadedFile,
-    mouse_action_sentinel::MouseActionSentinel,
+    mouse::sentinel::MouseActionSentinel,
     state::{AppState, Focus},
 };
 use ratatui::{
