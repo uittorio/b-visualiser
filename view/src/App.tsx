@@ -26,7 +26,7 @@ export default function App() {
             <Files />
           </div>
         </div>
-        <div className="col-span-7 border-r h-dvh flex flex-col">
+        <div className="col-span-6 border-r h-dvh flex flex-col">
           <div
             className={`flex flex-col h-full transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
           >
@@ -34,7 +34,7 @@ export default function App() {
             <FileView />
           </div>
         </div>
-        <div className="col-span-3 border-l h-dvh">
+        <div className="col-span-4 border-l h-dvh">
           <div
             className={`h-full transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
           >

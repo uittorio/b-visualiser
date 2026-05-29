@@ -31,10 +31,10 @@ export const FileView = () => {
                 <span
                   key={i}
                   onClick={() => selectByte(absOffset)}
-                  className={`w-[2.4ch] px-[0.2ch] text-center cursor-pointer select-none ${
+                  className={`w-[2.4ch] px-[0.2ch] text-center cursor-pointer select-none rounded-sm ${
                     selected
                       ? "bg-blue-500/20 text-blue-700 dark:text-blue-300"
-                      : "rounded-sm hover:bg-accent"
+                      : "hover:bg-accent"
                   }`}
                 >
                   {x}

@@ -67,8 +67,8 @@ pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
 
     Details {
         binary: format!("{:08b}", current_byte),
-        be_decimal_8: format!("{}", u8_details.0).to_string(),
-        le_decimal_8: format!("{}", u8_details.1).to_string(),
+        be_decimal_8: format!("{}", u8_details.0),
+        le_decimal_8: format!("{}", u8_details.1),
         be_decimal_16: u16_details.map(|x| x.0).map(|x| format!("{}", x)),
         le_decimal_16: u16_details.map(|x| x.1).map(|x| format!("{}", x)),
         be_decimal_32: u32_details.map(|x| x.0).map(|x| format!("{}", x)),
