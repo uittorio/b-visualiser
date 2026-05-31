@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { FileRow, useFileStore } from "../../state/filesState";
-import { VirtualRender } from "./virtualRender";
+import { VirtualRender } from "./VirtualRender";
 
 export const FileView = () => {
   const selectedFile = useFileStore((x) => x.selectedFile);
