@@ -34,7 +34,7 @@ This project is made of 2 core components
 
 #### Run rust engine
 ```
-cd engine
+cd core/wasm-engine
 bacon
 ```
 

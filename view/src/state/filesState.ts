@@ -10,11 +10,6 @@ type SelectedFile = FileData & {
   rows: FileRow[];
 };
 
-type BytesRange = {
-  from: number;
-  to: number;
-};
-
 export type ByteDetails = {
   binary: string;
   be_decimal_8: string;
@@ -35,8 +30,6 @@ type FileState = {
   rawBytes: Uint8Array | null;
   loading: boolean;
   error: Error | null;
-  bytesRange: BytesRange;
-  setByteRange: (from: number, to: number) => void;
   selectedByte: number | null;
   byteDetails: ByteDetails | null;
   selectByte: (offset: number) => void;
@@ -73,13 +66,6 @@ export const useFileStore = create<FileState>((set, get) => ({
     set({ selectedByte: offset, byteDetails: result });
   },
   clearSelectedByte: () => set({ selectedByte: null, byteDetails: null }),
-  setByteRange: (from: number, to: number) => {
-    set({ bytesRange: { from, to } });
-    const selected = get().selectedFile;
-    if (selected) {
-      get().selectFile(selected.id);
-    }
-  },
   loadFiles: async () => {
     set({ loading: true, error: null });
 
@@ -119,7 +105,7 @@ export const useFileStore = create<FileState>((set, get) => ({
           selectedFile: {
             id: file.id,
             name: file.name,
-            rows: read(rawBytes, get().bytesRange.from, get().bytesRange.to),
+            rows: read(rawBytes, 0, rawBytes.length),
           },
         });
         get().loadFiles();
@@ -145,7 +131,7 @@ export const useFileStore = create<FileState>((set, get) => ({
       selectedFile: {
         id: file.id,
         name: file.name,
-        rows: read(rawBytes, get().bytesRange.from, get().bytesRange.to),
+        rows: read(rawBytes, 0, rawBytes.length),
       },
     });
   },
