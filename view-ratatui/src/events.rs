@@ -1,3 +1,8 @@
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
+
 use crate::{
     bytes::selected_byte_details::SelectedByteDetails,
     state::{AppState, Focus},
@@ -132,6 +137,20 @@ pub fn handle_ui_sentinel(state: &mut AppState, ui_sentinel: &mut UiSentinel) {
 
     if let Some(file) = state.file.as_mut() {
         file.set_length(ui_sentinel.hex_panel_height * 16);
+    }
+
+    if ui_sentinel.open_file_path
+        && let Some(file) = &state.file
+    {
+        ui_sentinel.open_file_path = false;
+        Command::new("open")
+            .arg(
+                PathBuf::from(&file.path)
+                    .parent()
+                    .unwrap_or_else(|| Path::new(".")),
+            )
+            .spawn()
+            .unwrap();
     }
 }
 

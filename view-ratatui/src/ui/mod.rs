@@ -20,7 +20,7 @@ pub fn draw(frame: &mut Frame, state: &AppState, mouse: &Mouse, ui_sentinel: &mu
 
     hex_panel::render(frame, left, state, mouse, ui_sentinel);
     details_panel::render(frame, right, state, mouse, ui_sentinel);
-    bottom_bar::render(frame, bottom, state, mouse);
+    bottom_bar::render(frame, bottom, state, mouse, ui_sentinel);
     search_bar::render(frame, frame.area(), state);
 }
 
@@ -31,4 +31,5 @@ pub struct UiSentinel {
     pub change_hover: Option<Focus>,
     pub hex_panel_height: u16,
     pub details_panel_content_height: u16,
+    pub open_file_path: bool,
 }
