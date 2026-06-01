@@ -10,7 +10,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
 };
 
 pub fn render(
@@ -36,6 +36,14 @@ pub fn render(
     let Some(file) = &state.file else {
         return;
     };
+
+    let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+        .begin_symbol(Some("↑"))
+        .end_symbol(Some("↓"));
+
+    let mut scrollbar_state = ScrollbarState::new(file.bytes.len()).position(file.offset as usize);
+
+    frame.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
 
     render_hex(
         frame,
