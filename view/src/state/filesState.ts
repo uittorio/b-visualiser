@@ -22,6 +22,7 @@ export type ByteDetails = {
   le_decimal_64: string | null;
   be_decimal_128: string | null;
   le_decimal_128: string | null;
+  ascii_symbol: string;
 };
 
 type FileState = {
@@ -42,6 +43,7 @@ type FileState = {
 export type FileRow = {
   bytes: number[];
   hexadecimal: string[];
+  ascii: string[];
 };
 
 export type FileByteData = FileRow[];

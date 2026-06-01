@@ -33,29 +33,53 @@ type FileRowCmpProps = {
 
 const FileRowCmp = ({ index, row }: FileRowCmpProps) => {
   return (
-    <div key={index} className="flex py-1 hover:bg-muted/20 rounded px-1">
-      {row.hexadecimal.map((x, i) => {
-        const absIndex = index * 16 + i;
+    <div className="flex justify-between">
+      <div className="flex py-1 hover:bg-muted/20 rounded px-1">
+        {row.hexadecimal.map((x, i) => {
+          const absIndex = index * 16 + i;
 
-        return <ByteCell index={absIndex} value={x} key={absIndex} />;
-      })}
+          return (
+            <Cell
+              index={absIndex}
+              value={x}
+              key={"hex-" + absIndex}
+              className="w-[2.4ch] px-[0.2ch]"
+            />
+          );
+        })}
+      </div>
+
+      <div className="flex py-1 hover:bg-muted/20 rounded px-1 justify-end">
+        {row.ascii.map((x, i) => {
+          const absIndex = index * 16 + i;
+          return (
+            <Cell
+              index={absIndex}
+              value={x}
+              key={"ascii-" + absIndex}
+              className="w-[1.4ch] px-[0.2ch]"
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
 
-type ByteCellProps = {
+type CellProps = {
   index: number;
   value: string;
+  className: string;
 };
 
-const ByteCell = ({ index, value }: ByteCellProps) => {
+const Cell = ({ index, value, className }: CellProps) => {
   const selectedByte = useFileStore((x) => x.selectedByte == index);
   const selectByte = useFileStore((x) => x.selectByte);
   return (
     <span
       key={index}
       onClick={() => selectByte(index)}
-      className={`w-[2.4ch] px-[0.2ch] text-center cursor-pointer select-none rounded-sm ${
+      className={`${className} text-center cursor-pointer select-none rounded-sm ${
         selectedByte
           ? "bg-blue-500/20 text-blue-700 dark:text-blue-300"
           : "hover:bg-accent"

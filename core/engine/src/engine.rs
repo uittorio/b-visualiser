@@ -1,9 +1,14 @@
+mod ascii;
+
 use serde::Serialize;
+
+use crate::ascii::{ascii_symbol, byte_to_printable_ascii};
 
 #[derive(Serialize)]
 pub struct FileRow {
     pub bytes: Vec<u8>,
     pub hexadecimal: Vec<String>,
+    pub ascii: Vec<String>,
 }
 
 pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Vec<FileRow> {
@@ -16,6 +21,10 @@ pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Vec<FileRow> {
             hexadecimal: bytes
                 .iter()
                 .map(|b| format!("{:02x}", b))
+                .collect::<Vec<_>>(),
+            ascii: bytes
+                .iter()
+                .map(|b| byte_to_printable_ascii(*b))
                 .collect::<Vec<_>>(),
         });
     }
@@ -36,6 +45,7 @@ pub struct Details {
     pub le_decimal_64: Option<String>,
     pub be_decimal_128: Option<String>,
     pub le_decimal_128: Option<String>,
+    pub ascii_symbol: String,
 }
 
 pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
@@ -69,13 +79,14 @@ pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
         binary: format!("{:08b}", current_byte),
         be_decimal_8: format!("{}", u8_details.0),
         le_decimal_8: format!("{}", u8_details.1),
-        be_decimal_16: u16_details.map(|x| x.0).map(|x| format!("{}", x)),
-        le_decimal_16: u16_details.map(|x| x.1).map(|x| format!("{}", x)),
-        be_decimal_32: u32_details.map(|x| x.0).map(|x| format!("{}", x)),
-        le_decimal_32: u32_details.map(|x| x.1).map(|x| format!("{}", x)),
-        be_decimal_64: u64_details.map(|x| x.0).map(|x| format!("{}", x)),
-        le_decimal_64: u64_details.map(|x| x.1).map(|x| format!("{}", x)),
-        be_decimal_128: u128_details.map(|x| x.0).map(|x| format!("{}", x)),
-        le_decimal_128: u128_details.map(|x| x.1).map(|x| format!("{}", x)),
+        be_decimal_16: u16_details.map(|x| x.0).map(|x| x.to_string()),
+        le_decimal_16: u16_details.map(|x| x.1).map(|x| x.to_string()),
+        be_decimal_32: u32_details.map(|x| x.0).map(|x| x.to_string()),
+        le_decimal_32: u32_details.map(|x| x.1).map(|x| x.to_string()),
+        be_decimal_64: u64_details.map(|x| x.0).map(|x| x.to_string()),
+        le_decimal_64: u64_details.map(|x| x.1).map(|x| x.to_string()),
+        be_decimal_128: u128_details.map(|x| x.0).map(|x| x.to_string()),
+        le_decimal_128: u128_details.map(|x| x.1).map(|x| x.to_string()),
+        ascii_symbol: ascii_symbol(current_byte),
     }
 }

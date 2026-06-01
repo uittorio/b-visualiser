@@ -14,6 +14,13 @@ export const ByteDetails = () => {
 
   return (
     <div className="h-full overflow-y-auto p-5 font-mono text-sm space-y-5">
+      <div className="space-y-2">
+        <Label>Ascii</Label>
+        <Row label="Symbol" value={details.ascii_symbol} />
+      </div>
+
+      <Divider />
+
       <div className="space-y-1.5">
         <Label>u8</Label>
         <Row label="BE" value={details.be_decimal_8} />
