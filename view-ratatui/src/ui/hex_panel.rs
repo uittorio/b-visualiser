@@ -7,7 +7,7 @@ use crate::{
 };
 use ratatui::{
     Frame,
-    layout::Rect,
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
@@ -45,10 +45,31 @@ pub fn render(
 
     frame.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
 
-    render_hex(
+    let [hex_area, _, ascii_area] = Layout::horizontal([
+        Constraint::Length(47),
+        Constraint::Length(6),
+        Constraint::Length(31),
+    ])
+    .areas(inner);
+
+    render_grid(
         frame,
-        inner,
-        file,
+        hex_area,
+        file.view.iter().map(|v| &v.hexadecimal),
+        2,
+        &file,
+        &state.selected_byte,
+        focused,
+        mouse,
+        ui_sentinel,
+    );
+
+    render_grid(
+        frame,
+        ascii_area,
+        file.view.iter().map(|v| &v.ascii),
+        1,
+        &file,
         &state.selected_byte,
         focused,
         mouse,
@@ -56,9 +77,11 @@ pub fn render(
     );
 }
 
-fn render_hex(
+fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
     frame: &mut Frame,
     area: Rect,
+    lines: T,
+    cell_size: usize,
     file: &LoadedFile,
     selected_byte: &Option<SelectedByteDetails>,
     focused: bool,
@@ -72,14 +95,12 @@ fn render_hex(
     };
 
     let hex_bytes = Paragraph::new(
-        file.view
-            .iter()
+        lines
             .enumerate()
             .take(area.height as usize)
             .map(|(y, r)| {
                 Line::from(
-                    r.hexadecimal
-                        .iter()
+                    r.iter()
                         .enumerate()
                         .flat_map(|(x, h)| {
                             vec![
@@ -100,13 +121,19 @@ fn render_hex(
             .collect::<Vec<_>>(),
     );
 
-    listen_mouse(file, &area, mouse, ui_sentinel);
+    listen_mouse(cell_size, file, &area, mouse, ui_sentinel);
     frame.render_widget(hex_bytes, area);
 
     ui_sentinel.hex_panel_height = area.height;
 }
 
-fn listen_mouse(file: &LoadedFile, area: &Rect, mouse: &Mouse, ui_sentinel: &mut UiSentinel) {
+fn listen_mouse(
+    cell_size: usize,
+    file: &LoadedFile,
+    area: &Rect,
+    mouse: &Mouse,
+    ui_sentinel: &mut UiSentinel,
+) {
     let Some(MouseEventKind::Click) = mouse.event_kind() else {
         return;
     };
@@ -126,11 +153,11 @@ fn listen_mouse(file: &LoadedFile, area: &Rect, mouse: &Mouse, ui_sentinel: &mut
     let adjusted_y = pos.y - area.y;
 
     // On the space between bytes
-    if (adjusted_x + 1) % 3 == 0 {
+    if (adjusted_x + 1) % (cell_size as u16 + 1) == 0 {
         return;
     }
 
-    let x = (adjusted_x + 1) / 3;
+    let x = (adjusted_x + 1) / (cell_size as u16 + 1);
     let y = adjusted_y;
 
     // Click on right side of hex grid

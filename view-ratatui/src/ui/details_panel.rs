@@ -138,7 +138,7 @@ fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) {
     let [left, right] =
         Layout::horizontal([Constraint::Length(6), Constraint::Fill(1)]).areas(area);
     Paragraph::new(vec![
-        Line::from("ASCII").italic(),
+        Line::from("ASCII").bold(),
         Line::from("Symbol").italic(),
     ])
     .render(left, buffer);
