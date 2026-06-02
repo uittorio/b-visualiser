@@ -46,14 +46,11 @@ export type FileRow = {
   ascii: string[];
 };
 
-export type FileByteData = FileRow[];
-
 export const useFileStore = create<FileState>((set, get) => ({
   files: [],
   selectedFile: null,
   rawBytes: null,
   loading: true,
-  bytesRange: { from: 0, to: 1000 },
   error: null,
   selectedByte: null,
   byteDetails: null,
