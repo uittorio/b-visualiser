@@ -14,6 +14,7 @@ use ratatui::{
 };
 
 pub fn render(
+    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
     state: &AppState,
@@ -46,13 +47,14 @@ pub fn render(
     frame.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
 
     let [hex_area, _, ascii_area] = Layout::horizontal([
-        Constraint::Length(47),
-        Constraint::Length(6),
-        Constraint::Length(31),
+        Constraint::Length(hex_area_size(compact_mode)),
+        Constraint::Length(if compact_mode { 1 } else { 6 }),
+        Constraint::Length(ascii_area_size(compact_mode)),
     ])
     .areas(inner);
 
     render_grid(
+        compact_mode,
         frame,
         hex_area,
         file.view.iter().map(|v| &v.hexadecimal),
@@ -65,6 +67,7 @@ pub fn render(
     );
 
     render_grid(
+        compact_mode,
         frame,
         ascii_area,
         file.view.iter().map(|v| &v.ascii),
@@ -77,7 +80,16 @@ pub fn render(
     );
 }
 
+fn hex_area_size(compact_mode: bool) -> u16 {
+    if compact_mode { 32 } else { 47 }
+}
+
+fn ascii_area_size(compact_mode: bool) -> u16 {
+    if compact_mode { 16 } else { 31 }
+}
+
 fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
+    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
     lines: T,
@@ -103,17 +115,22 @@ fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
                     r.iter()
                         .enumerate()
                         .flat_map(|(x, h)| {
-                            vec![
-                                if let Some(selected_byte) = selected_byte
-                                    && selected_byte.offset as usize
-                                        == y * 16 + x + file.offset as usize
-                                {
-                                    Span::from(h).style(selected_style)
-                                } else {
-                                    Span::from(h)
-                                },
-                                Span::from(" "),
-                            ]
+                            let mut byte_span = if let Some(selected_byte) = selected_byte
+                                && selected_byte.offset as usize
+                                    == y * 16 + x + file.offset as usize
+                            {
+                                Span::from(h).style(selected_style)
+                            } else {
+                                Span::from(h)
+                            };
+                            if compact_mode {
+                                if x % 2 == 0 {
+                                    byte_span.style = byte_span.style.bold();
+                                }
+                                vec![byte_span]
+                            } else {
+                                vec![byte_span, Span::from(" ")]
+                            }
                         })
                         .collect::<Vec<_>>(),
                 )
@@ -121,13 +138,14 @@ fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
             .collect::<Vec<_>>(),
     );
 
-    listen_mouse(cell_size, file, &area, mouse, ui_sentinel);
+    listen_mouse(compact_mode, cell_size, file, &area, mouse, ui_sentinel);
     frame.render_widget(hex_bytes, area);
 
     ui_sentinel.hex_panel_height = area.height;
 }
 
 fn listen_mouse(
+    compact_mode: bool,
     cell_size: usize,
     file: &LoadedFile,
     area: &Rect,
@@ -139,6 +157,7 @@ fn listen_mouse(
     };
 
     let pos = mouse.position();
+    let space_between_cells = if compact_mode { 0 } else { 1 };
 
     // Outside the area
     if pos.x < area.x
@@ -153,11 +172,11 @@ fn listen_mouse(
     let adjusted_y = pos.y - area.y;
 
     // On the space between bytes
-    if (adjusted_x + 1) % (cell_size as u16 + 1) == 0 {
+    if !compact_mode && (adjusted_x + 1) % (cell_size as u16 + 1) == 0 {
         return;
     }
 
-    let x = (adjusted_x + 1) / (cell_size as u16 + 1);
+    let x = (adjusted_x + space_between_cells) / (cell_size as u16 + space_between_cells);
     let y = adjusted_y;
 
     // Click on right side of hex grid

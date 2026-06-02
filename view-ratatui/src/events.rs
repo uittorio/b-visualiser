@@ -171,11 +171,15 @@ pub fn handle_mouse(mouse_event: MouseEvent, state: &mut AppState, ui_sentinel: 
         MouseEventKind::ScrollUp => match state.hover {
             Focus::HexView => {
                 if let Some(file) = state.file.as_mut() {
-                    file.set_offset(file.offset.saturating_sub(16));
+                    file.set_offset(((file.offset / 16) * 16).saturating_sub(16));
                 }
             }
             Focus::Details => {
-                state.details_panel.scroll = state.details_panel.scroll.saturating_sub(1)
+                state.details_panel.scroll = state
+                    .details_panel
+                    .scroll
+                    .min(ui_sentinel.details_panel_content_height as usize)
+                    .saturating_sub(1)
             }
             Focus::Search => {}
         },

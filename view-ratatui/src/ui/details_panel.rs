@@ -3,6 +3,7 @@ use crate::{
     state::{AppState, Focus},
     ui::UiSentinel,
 };
+use engine::TypeInfo;
 use ratatui::{
     Frame,
     buffer::Buffer,
@@ -13,6 +14,7 @@ use ratatui::{
 };
 
 pub fn render(
+    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
     state: &AppState,
@@ -44,97 +46,46 @@ pub fn render(
         return;
     };
 
-    let [
-        ascii_section,
-        u8_section,
-        u16_section,
-        u32_section,
-        u64_section,
-        u128_section,
-        binary_section,
-    ] = Layout::vertical([
-        Constraint::Length(3),
-        Constraint::Length(4),
-        Constraint::Length(4),
-        Constraint::Length(4),
-        Constraint::Length(4),
-        Constraint::Length(4),
-        Constraint::Length(2),
-    ])
-    .areas(buffer.area);
+    let details = &selected_byte.details;
 
-    render_ascii_section(
-        &mut buffer,
-        ascii_section,
-        &selected_byte.details.ascii_symbol,
-    );
-    render_section(
-        &mut buffer,
-        u8_section,
-        "u8",
-        &selected_byte.details.be_decimal_8,
-        &selected_byte.details.le_decimal_8,
-    );
-    if let (Some(be_decimal_16), Some(le_decimal_16)) = (
-        &selected_byte.details.be_decimal_16,
-        &selected_byte.details.le_decimal_16,
-    ) {
-        render_section(
-            &mut buffer,
-            u16_section,
-            "u16",
-            &be_decimal_16,
-            &le_decimal_16,
-        );
+    let mut area = buffer.area;
+
+    let used = render_ascii_section(&mut buffer, area, &details.ascii_symbol);
+    area = go_next(area, used);
+
+    let used = render_section(&mut buffer, area, "u8", details.u8());
+    area = go_next(area, used);
+
+    if let Some(info) = details.u16() {
+        let used = render_section(&mut buffer, area, "u16", info);
+        area = go_next(area, used);
     }
-    if let (Some(be_decimal_32), Some(le_decimal_32)) = (
-        &selected_byte.details.be_decimal_32,
-        &selected_byte.details.le_decimal_32,
-    ) {
-        render_section(
-            &mut buffer,
-            u32_section,
-            "u32",
-            &be_decimal_32,
-            &le_decimal_32,
-        );
+    if let Some(info) = details.u32() {
+        let used = render_section(&mut buffer, area, "u32", info);
+        area = go_next(area, used);
     }
-    if let (Some(be_decimal_64), Some(le_decimal_64)) = (
-        &selected_byte.details.be_decimal_64,
-        &selected_byte.details.le_decimal_64,
-    ) {
-        render_section(
-            &mut buffer,
-            u64_section,
-            "u64",
-            &be_decimal_64,
-            &le_decimal_64,
-        );
+    if let Some(info) = details.u64() {
+        let used = render_section(&mut buffer, area, "u64", info);
+        area = go_next(area, used);
     }
-    if let (Some(be_decimal_128), Some(le_decimal_128)) = (
-        &selected_byte.details.be_decimal_128,
-        &selected_byte.details.le_decimal_128,
-    ) {
-        render_section(
-            &mut buffer,
-            u128_section,
-            "u128",
-            &be_decimal_128,
-            &le_decimal_128,
-        );
+    if !compact_mode && let Some(info) = details.u128() {
+        let used = render_section(&mut buffer, area, "u128", info);
+        area = go_next(area, used);
     }
-    render_binary_section(&mut buffer, binary_section, &selected_byte.details.binary);
+    render_binary_section(&mut buffer, area, &selected_byte.details.binary);
+
+    let bottom_y = area.y;
 
     buffer
         .content
-        .drain(..buffer.area().width as usize * state.details_panel.scroll);
+        .drain(..buffer.area().width as usize * state.details_panel.scroll.min(bottom_y as usize));
     buffer.resize(inner);
     frame.buffer_mut().merge(&buffer);
 
-    ui_sentinel.details_panel_content_height = binary_section.y;
+    ui_sentinel.details_panel_content_height = bottom_y;
 }
 
-fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) {
+fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) -> LinesRendered {
     let [top_area, divider_area] =
         Layout::vertical([Constraint::Length(2), Constraint::Length(1)]).areas(area);
     let [left, right] =
@@ -149,9 +100,16 @@ fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) {
     ratatui::symbols::line::HORIZONTAL
         .repeat(divider_area.width as usize)
         .render(divider_area, buffer);
+
+    LinesRendered(3)
 }
 
-fn render_section(buffer: &mut Buffer, area: Rect, title: &str, be: &str, le: &str) {
+fn render_section(
+    buffer: &mut Buffer,
+    area: Rect,
+    title: &str,
+    type_info: TypeInfo,
+) -> LinesRendered {
     let [title_area, bytes_area, divider_area] = Layout::vertical([
         Constraint::Length(1),
         Constraint::Length(2),
@@ -166,16 +124,18 @@ fn render_section(buffer: &mut Buffer, area: Rect, title: &str, be: &str, le: &s
 
     Paragraph::new(vec![Line::from("BE").italic(), Line::from("LE").italic()]).render(left, buffer);
     Paragraph::new(vec![
-        Line::from(be).right_aligned(),
-        Line::from(le).right_aligned(),
+        Line::from(type_info.be_decimal).right_aligned(),
+        Line::from(type_info.le_decimal).right_aligned(),
     ])
     .render(right, buffer);
     ratatui::symbols::line::HORIZONTAL
         .repeat(divider_area.width as usize)
         .render(divider_area, buffer);
+
+    LinesRendered(4)
 }
 
-fn render_binary_section(buffer: &mut Buffer, area: Rect, binary: &str) {
+fn render_binary_section(buffer: &mut Buffer, area: Rect, binary: &str) -> LinesRendered {
     Paragraph::new(vec![
         Line::from("Binary").bold(),
         Line::from(
@@ -193,6 +153,8 @@ fn render_binary_section(buffer: &mut Buffer, area: Rect, binary: &str) {
         ),
     ])
     .render(area, buffer);
+
+    LinesRendered(2)
 }
 
 fn border_style(focused: bool) -> Style {
@@ -202,3 +164,14 @@ fn border_style(focused: bool) -> Style {
         Style::new().fg(Color::DarkGray)
     }
 }
+
+fn go_next(area: Rect, used: LinesRendered) -> Rect {
+    Rect {
+        x: area.x,
+        width: area.width,
+        height: area.height,
+        y: area.y + used.0,
+    }
+}
+
+struct LinesRendered(u16);
