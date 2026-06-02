@@ -8,13 +8,12 @@ use crate::{
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style},
+    style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
+    widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Widget},
 };
 
 pub fn render(
-    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
     state: &AppState,
@@ -46,15 +45,23 @@ pub fn render(
 
     frame.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
 
-    let [hex_area, _, ascii_area] = Layout::horizontal([
-        Constraint::Length(hex_area_size(compact_mode)),
-        Constraint::Length(if compact_mode { 1 } else { 6 }),
-        Constraint::Length(ascii_area_size(compact_mode)),
+    let [offset_area, hex_area, ascii_area] = Layout::horizontal([
+        Constraint::Length(12),
+        Constraint::Length(49),
+        Constraint::Length(16),
     ])
+    .flex(ratatui::layout::Flex::Center)
     .areas(inner);
 
+    render_offset(
+        frame,
+        offset_area,
+        file.view.iter().map(|v| v.hex_offset.as_str()),
+    );
+
     render_grid(
-        compact_mode,
+        true,
+        true,
         frame,
         hex_area,
         file.view.iter().map(|v| &v.hexadecimal),
@@ -67,7 +74,8 @@ pub fn render(
     );
 
     render_grid(
-        compact_mode,
+        false,
+        false,
         frame,
         ascii_area,
         file.view.iter().map(|v| &v.ascii),
@@ -80,16 +88,15 @@ pub fn render(
     );
 }
 
-fn hex_area_size(compact_mode: bool) -> u16 {
-    if compact_mode { 32 } else { 47 }
-}
-
-fn ascii_area_size(compact_mode: bool) -> u16 {
-    if compact_mode { 16 } else { 31 }
+fn render_offset<'a, T: Iterator<Item = &'a str>>(frame: &mut Frame, area: Rect, lines: T) {
+    Paragraph::new(lines.map(|l| Line::from(l)).collect::<Vec<_>>())
+        .italic()
+        .render(area, frame.buffer_mut());
 }
 
 fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
-    compact_mode: bool,
+    spacing: bool,
+    grid_highlight: bool,
     frame: &mut Frame,
     area: Rect,
     lines: T,
@@ -123,13 +130,13 @@ fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
                             } else {
                                 Span::from(h)
                             };
-                            if compact_mode {
-                                if x % 2 == 0 {
-                                    byte_span.style = byte_span.style.bold();
-                                }
-                                vec![byte_span]
-                            } else {
+                            if grid_highlight && x % 2 == 0 {
+                                byte_span.style = byte_span.style.bold();
+                            }
+                            if spacing {
                                 vec![byte_span, Span::from(" ")]
+                            } else {
+                                vec![byte_span]
                             }
                         })
                         .collect::<Vec<_>>(),
@@ -138,14 +145,14 @@ fn render_grid<'a, T: Iterator<Item = &'a Vec<String>>>(
             .collect::<Vec<_>>(),
     );
 
-    listen_mouse(compact_mode, cell_size, file, &area, mouse, ui_sentinel);
+    listen_mouse(spacing, cell_size, file, &area, mouse, ui_sentinel);
     frame.render_widget(hex_bytes, area);
 
     ui_sentinel.hex_panel_height = area.height;
 }
 
 fn listen_mouse(
-    compact_mode: bool,
+    spacing: bool,
     cell_size: usize,
     file: &LoadedFile,
     area: &Rect,
@@ -157,7 +164,7 @@ fn listen_mouse(
     };
 
     let pos = mouse.position();
-    let space_between_cells = if compact_mode { 0 } else { 1 };
+    let space_between_cells = if spacing { 1 } else { 0 };
 
     // Outside the area
     if pos.x < area.x
@@ -172,7 +179,7 @@ fn listen_mouse(
     let adjusted_y = pos.y - area.y;
 
     // On the space between bytes
-    if !compact_mode && (adjusted_x + 1) % (cell_size as u16 + 1) == 0 {
+    if spacing && (adjusted_x + 1) % (cell_size as u16 + 1) == 0 {
         return;
     }
 

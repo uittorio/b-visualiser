@@ -13,7 +13,7 @@ use ratatui::{
 };
 
 pub fn draw(frame: &mut Frame, state: &AppState, mouse: &Mouse, ui_sentinel: &mut UiSentinel) {
-    let compact_mode = frame.area().width < 132;
+    let compact_mode = frame.area().width < 124;
 
     let [top, bottom] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(3)]).areas(frame.area());
@@ -24,7 +24,7 @@ pub fn draw(frame: &mut Frame, state: &AppState, mouse: &Mouse, ui_sentinel: &mu
     ])
     .areas(top);
 
-    hex_panel::render(compact_mode, frame, hex_area, state, mouse, ui_sentinel);
+    hex_panel::render(frame, hex_area, state, mouse, ui_sentinel);
     details_panel::render(compact_mode, frame, details_area, state, mouse, ui_sentinel);
     bottom_bar::render(compact_mode, frame, bottom, state, mouse, ui_sentinel);
     search_bar::render(frame, frame.area(), state);
