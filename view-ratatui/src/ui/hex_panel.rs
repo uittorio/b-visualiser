@@ -166,7 +166,7 @@ fn listen_mouse(
     }
 
     // Click after hex grid ends
-    if y * 16 + x > file.length as u16 {
+    if y * 16 + x >= (file.bytes.len() as u32 - file.offset) as u16 {
         return;
     }
 
