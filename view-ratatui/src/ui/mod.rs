@@ -16,10 +16,14 @@ pub fn draw(frame: &mut Frame, state: &AppState, mouse: &Mouse, ui_sentinel: &mu
     let [top, bottom] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(3)]).areas(frame.area());
 
-    let [left, right] = Layout::horizontal([Constraint::Fill(1), Constraint::Max(45)]).areas(top);
+    let [hex_area, details_area] = if top.width < 132 {
+        Layout::vertical([Constraint::Length(top.width - 20), Constraint::Length(20)]).areas(top)
+    } else {
+        Layout::horizontal([Constraint::Fill(1), Constraint::Max(45)]).areas(top)
+    };
 
-    hex_panel::render(frame, left, state, mouse, ui_sentinel);
-    details_panel::render(frame, right, state, mouse, ui_sentinel);
+    hex_panel::render(frame, hex_area, state, mouse, ui_sentinel);
+    details_panel::render(frame, details_area, state, mouse, ui_sentinel);
     bottom_bar::render(frame, bottom, state, mouse, ui_sentinel);
     search_bar::render(frame, frame.area(), state);
 }
