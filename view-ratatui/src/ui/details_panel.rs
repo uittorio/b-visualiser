@@ -45,6 +45,7 @@ pub fn render(
     };
 
     let [
+        ascii_section,
         u8_section,
         u16_section,
         u32_section,
@@ -52,6 +53,7 @@ pub fn render(
         u128_section,
         binary_section,
     ] = Layout::vertical([
+        Constraint::Length(3),
         Constraint::Length(4),
         Constraint::Length(4),
         Constraint::Length(4),
@@ -61,6 +63,11 @@ pub fn render(
     ])
     .areas(buffer.area);
 
+    render_ascii_section(
+        &mut buffer,
+        ascii_section,
+        &selected_byte.details.ascii_symbol,
+    );
     render_section(
         &mut buffer,
         u8_section,
@@ -125,6 +132,17 @@ pub fn render(
     frame.buffer_mut().merge(&buffer);
 
     ui_sentinel.details_panel_content_height = binary_section.y;
+}
+
+fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) {
+    let [left, right] =
+        Layout::horizontal([Constraint::Length(6), Constraint::Fill(1)]).areas(area);
+    Paragraph::new(vec![
+        Line::from("ASCII").italic(),
+        Line::from("Symbol").italic(),
+    ])
+    .render(left, buffer);
+    Paragraph::new(vec![Line::from(""), Line::from(ascii).right_aligned()]).render(right, buffer);
 }
 
 fn render_section(buffer: &mut Buffer, area: Rect, title: &str, be: &str, le: &str) {
