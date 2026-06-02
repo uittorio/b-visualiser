@@ -135,14 +135,20 @@ pub fn render(
 }
 
 fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) {
+    let [top_area, divider_area] =
+        Layout::vertical([Constraint::Length(2), Constraint::Length(1)]).areas(area);
     let [left, right] =
-        Layout::horizontal([Constraint::Length(6), Constraint::Fill(1)]).areas(area);
+        Layout::horizontal([Constraint::Length(6), Constraint::Fill(1)]).areas(top_area);
     Paragraph::new(vec![
         Line::from("ASCII").bold(),
         Line::from("Symbol").italic(),
     ])
     .render(left, buffer);
     Paragraph::new(vec![Line::from(""), Line::from(ascii).right_aligned()]).render(right, buffer);
+
+    ratatui::symbols::line::HORIZONTAL
+        .repeat(divider_area.width as usize)
+        .render(divider_area, buffer);
 }
 
 fn render_section(buffer: &mut Buffer, area: Rect, title: &str, be: &str, le: &str) {
@@ -176,7 +182,13 @@ fn render_binary_section(buffer: &mut Buffer, area: Rect, binary: &str) {
             binary
                 .chars()
                 .into_iter()
-                .flat_map(|c| vec![Span::from(c.to_string()), Span::from(" ")])
+                .map(|c| {
+                    if c == '1' {
+                        Span::from(format!("{} ", c.to_string())).bold()
+                    } else {
+                        Span::from(format!("{} ", c.to_string()))
+                    }
+                })
                 .collect::<Vec<Span>>(),
         ),
     ])
