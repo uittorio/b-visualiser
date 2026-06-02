@@ -44,6 +44,7 @@ export type FileRow = {
   bytes: number[];
   hexadecimal: string[];
   ascii: string[];
+  hex_offset: string;
 };
 
 export const useFileStore = create<FileState>((set, get) => ({

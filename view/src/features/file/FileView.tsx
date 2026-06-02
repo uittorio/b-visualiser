@@ -33,34 +33,31 @@ type FileRowCmpProps = {
 
 const FileRowCmp = ({ index, row }: FileRowCmpProps) => {
   return (
-    <div className="flex justify-between">
-      <div className="flex py-1 hover:bg-muted/20 rounded px-1">
-        {row.hexadecimal.map((x, i) => {
-          const absIndex = index * 16 + i;
+    <div className="flex items-center gap-4">
+      <span className="shrink-0 select-none text-muted-foreground/40 w-[10ch] text-right">
+        {row.hex_offset}
+      </span>
 
-          return (
-            <Cell
-              index={absIndex}
-              value={x}
-              key={"hex-" + absIndex}
-              className="w-[2.4ch] px-[0.2ch]"
-            />
-          );
-        })}
+      <div className="flex py-1 hover:bg-muted/20 rounded px-1 w-[calc(16*2.4ch+0.4ch)] shrink-0">
+        {row.hexadecimal.map((x, i) => (
+          <Cell
+            index={index * 16 + i}
+            value={x}
+            key={"hex-" + (index * 16 + i)}
+            className="w-[2.4ch] px-[0.2ch]"
+          />
+        ))}
       </div>
 
-      <div className="flex py-1 hover:bg-muted/20 rounded px-1 justify-end">
-        {row.ascii.map((x, i) => {
-          const absIndex = index * 16 + i;
-          return (
-            <Cell
-              index={absIndex}
-              value={x}
-              key={"ascii-" + absIndex}
-              className="w-[1.4ch] px-[0.2ch]"
-            />
-          );
-        })}
+      <div className="flex py-1 hover:bg-muted/20 rounded px-1">
+        {row.ascii.map((x, i) => (
+          <Cell
+            index={index * 16 + i}
+            value={x}
+            key={"ascii-" + (index * 16 + i)}
+            className="w-[1.4ch] px-[0.2ch]"
+          />
+        ))}
       </div>
     </div>
   );
