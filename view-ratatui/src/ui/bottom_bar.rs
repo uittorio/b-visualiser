@@ -7,12 +7,14 @@ use ratatui::{
 };
 
 use crate::{
+    files::file::LoadedFile,
     mouse::{Mouse, MouseEventKind},
     state::AppState,
     ui::UiSentinel,
 };
 
 pub fn render(
+    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
     state: &AppState,
@@ -28,7 +30,7 @@ pub fn render(
     frame.render_widget(block, area);
 
     if let Some(file) = &state.file {
-        let next_area = render_file_path(frame, inner, &file.path, mouse, ui_sentinel);
+        let next_area = render_file_path(compact_mode, frame, inner, file, mouse, ui_sentinel);
         let line = Line::from(format!(
             " · View ({}, {}) · Selected {} · {}",
             file.offset,
@@ -46,12 +48,19 @@ pub fn render(
 }
 
 fn render_file_path(
+    compact_mode: bool,
     frame: &mut Frame,
     area: Rect,
-    path: &str,
+    file: &LoadedFile,
     mouse: &Mouse,
     ui_sentinel: &mut UiSentinel,
 ) -> Rect {
+    let path = if compact_mode {
+        &file.filename
+    } else {
+        &file.path
+    };
+
     frame.render_widget(Span::raw(path), area);
 
     let path_len = path.len() as u16;
