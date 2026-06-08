@@ -1,5 +1,3 @@
-Delete files
-show and highlight hex values when hovering or selecting u8,16,u32,u64,u128
-add hex offset
-add explanations
-search
+- Delete files
+- show and highlight hex values when hovering or selecting u8,16,u32,u64,u128
+- search
