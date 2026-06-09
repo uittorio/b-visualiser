@@ -1,9 +1,22 @@
-import { FileIcon } from "lucide-react";
+import { FileIcon, Trash2 } from "lucide-react";
 import { useFileStore } from "../../state/filesState";
 import { Uploader } from "./Uploader";
+import { FileData } from "@/state/file";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 export const Files: React.FC = () => {
-  const { files, selectedFile, selectFile } = useFileStore();
+  const { files } = useFileStore();
 
   return (
     <div className="flex flex-col h-full">
@@ -20,24 +33,58 @@ export const Files: React.FC = () => {
             No files yet
           </p>
         )}
-        {files.map((f) => {
-          const isSelected = selectedFile?.id === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => selectFile(f.id)}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-colors ${
-                isSelected
-                  ? "bg-accent text-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-              }`}
-            >
-              <FileIcon className="w-3 h-3 shrink-0" />
-              <span className="truncate">{f.name}</span>
-            </button>
-          );
-        })}
+        {files.map((f) => (
+          <FileRow file={f} key={f.id}></FileRow>
+        ))}
       </div>
+    </div>
+  );
+};
+
+type FileRowProps = {
+  file: FileData;
+};
+
+export const FileRow = ({ file }: FileRowProps) => {
+  const { selectedFile, selectFile, removeFile } = useFileStore();
+
+  const isSelected = selectedFile?.id === file.id;
+
+  return (
+    <div className="flex">
+      <button
+        key={file.id}
+        onClick={() => selectFile(file.id)}
+        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-colors ${
+          isSelected
+            ? "bg-accent text-accent-foreground font-medium"
+            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+        }`}
+      >
+        <FileIcon className="w-3 h-3 shrink-0" />
+        <span className="truncate">{file.name}</span>
+      </button>
+      <AlertDialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deleting file {file.name}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removeFile(file.id)}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="xs">
+            <Trash2 className="w-3 h-3 shrink-0" />
+          </Button>
+        </AlertDialogTrigger>
+      </AlertDialog>
     </div>
   );
 };

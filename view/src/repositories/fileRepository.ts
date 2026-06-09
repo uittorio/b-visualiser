@@ -103,6 +103,22 @@ export class IndexDBFiles {
       };
     });
   }
+
+  remove(fileId: string): Promise<void | Error> {
+    return new Promise<void | Error>((res) => {
+      const db = this.db;
+      const transaction = db.transaction("FILES", "readwrite");
+      const request = transaction.objectStore("FILES").delete(fileId);
+
+      request.onsuccess = function () {
+        res();
+      };
+
+      request.onerror = function () {
+        res(new Error(`Error deleting file: ${request.error}`));
+      };
+    });
+  }
 }
 
 export async function getDbConnection(): Promise<IndexDBFiles | Error> {

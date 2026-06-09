@@ -38,6 +38,7 @@ type FileState = {
   loadFiles: () => Promise<void>;
   addFile: (file: FileStorageData) => Promise<void>;
   selectFile: (fileId: string) => Promise<void>;
+  removeFile: (fileId: string) => Promise<void>;
 };
 
 export type FileRow = {
@@ -133,6 +134,26 @@ export const useFileStore = create<FileState>((set, get) => ({
         name: file.name,
         rows: read(rawBytes, 0, rawBytes.length),
       },
+    });
+  },
+  removeFile: async (fileId: string) => {
+    const db = await getDbConnection();
+    const selectedFile = get().selectedFile;
+    if (db instanceof Error) {
+      set({ error: db });
+      return;
+    }
+    const file = await db.get(fileId);
+    if (file instanceof Error) {
+      set({ error: file });
+      return;
+    }
+
+    await db.remove(fileId);
+
+    set({
+      files: get().files.filter((f) => f.id !== fileId),
+      selectedFile: fileId === selectedFile?.id ? null : selectedFile,
     });
   },
 }));
