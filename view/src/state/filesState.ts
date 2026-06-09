@@ -10,16 +10,27 @@ type SelectedFile = FileData & {
   rows: FileRow[];
 };
 
+export type DecimalDetail = {
+  be: string;
+  le: string;
+  hex: string;
+};
+
 export type ByteDetails = {
   binary: string;
+  decimal_8: DecimalDetail;
   be_decimal_8: string;
   le_decimal_8: string;
+  decimal_16: DecimalDetail | null;
   be_decimal_16: string | null;
   le_decimal_16: string | null;
+  decimal_32: DecimalDetail | null;
   be_decimal_32: string | null;
   le_decimal_32: string | null;
+  decimal_64: DecimalDetail | null;
   be_decimal_64: string | null;
   le_decimal_64: string | null;
+  decimal_128: DecimalDetail | null;
   be_decimal_128: string | null;
   le_decimal_128: string | null;
   ascii_symbol: string;
@@ -31,7 +42,7 @@ type FileState = {
   rawBytes: Uint8Array | null;
   loading: boolean;
   error: Error | null;
-  selectedByte: number | null;
+  selectedByteOffset: number | null;
   byteDetails: ByteDetails | null;
   selectByte: (offset: number) => void;
   clearSelectedByte: () => void;
@@ -54,19 +65,19 @@ export const useFileStore = create<FileState>((set, get) => ({
   rawBytes: null,
   loading: true,
   error: null,
-  selectedByte: null,
+  selectedByteOffset: null,
   byteDetails: null,
   selectByte: (offset: number) => {
-    const { rawBytes, selectedByte } = get();
+    const { rawBytes, selectedByteOffset: selectedByte } = get();
     if (!rawBytes) return;
     if (selectedByte === offset) {
-      set({ selectedByte: null, byteDetails: null });
+      set({ selectedByteOffset: null, byteDetails: null });
       return;
     }
     const result = details(rawBytes, offset) as ByteDetails;
-    set({ selectedByte: offset, byteDetails: result });
+    set({ selectedByteOffset: offset, byteDetails: result });
   },
-  clearSelectedByte: () => set({ selectedByte: null, byteDetails: null }),
+  clearSelectedByte: () => set({ selectedByteOffset: null, byteDetails: null }),
   loadFiles: async () => {
     set({ loading: true, error: null });
 
@@ -127,7 +138,7 @@ export const useFileStore = create<FileState>((set, get) => ({
     const rawBytes = new Uint8Array(file.arrayBuffer);
     set({
       rawBytes,
-      selectedByte: null,
+      selectedByteOffset: null,
       byteDetails: null,
       selectedFile: {
         id: file.id,

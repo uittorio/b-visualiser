@@ -70,7 +70,7 @@ type CellProps = {
 };
 
 const Cell = ({ index, value, className }: CellProps) => {
-  const selectedByte = useFileStore((x) => x.selectedByte == index);
+  const selectedByte = useFileStore((x) => x.selectedByteOffset == index);
   const selectByte = useFileStore((x) => x.selectByte);
   return (
     <span

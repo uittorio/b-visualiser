@@ -1,7 +1,7 @@
-import { useFileStore } from "../../state/filesState";
+import { DecimalDetail, useFileStore } from "../../state/filesState";
 
 export const ByteDetails = () => {
-  const selectedByte = useFileStore((x) => x.selectedByte);
+  const selectedByte = useFileStore((x) => x.selectedByteOffset);
   const details = useFileStore((x) => x.byteDetails);
 
   if (selectedByte === null || !details) {
@@ -15,54 +15,26 @@ export const ByteDetails = () => {
   return (
     <div className="h-full overflow-y-auto p-5 font-mono text-sm space-y-5">
       <div className="space-y-2">
-        <Label>Ascii</Label>
+        <Label>ASCII</Label>
         <Row label="Symbol" value={details.ascii_symbol} />
       </div>
 
       <Divider />
 
-      <div className="space-y-1.5">
-        <Label>u8</Label>
-        <Row label="BE" value={details.be_decimal_8} />
-        <Row label="LE" value={details.le_decimal_8} />
-      </div>
-
+      <Decimal label="U8" details={details.decimal_8} />
       <Divider />
-
-      <div className="space-y-1.5">
-        <Label>u16</Label>
-        <Row label="BE" value={details.be_decimal_16} />
-        <Row label="LE" value={details.le_decimal_16} />
-      </div>
-
+      <Decimal label="U16" details={details.decimal_16} />
       <Divider />
-
-      <div className="space-y-1.5">
-        <Label>u32</Label>
-        <Row label="BE" value={details.be_decimal_32} />
-        <Row label="LE" value={details.le_decimal_32} />
-      </div>
-
+      <Decimal label="U32" details={details.decimal_32} />
       <Divider />
-
-      <div className="space-y-1.5">
-        <Label>u64</Label>
-        <Row label="BE" value={details.be_decimal_64} />
-        <Row label="LE" value={details.le_decimal_64} />
-      </div>
-
+      <Decimal label="U64" details={details.decimal_64} />
       <Divider />
-
-      <div className="space-y-1.5">
-        <Label>u128</Label>
-        <Row label="BE" value={details.be_decimal_128} />
-        <Row label="LE" value={details.le_decimal_128} />
-      </div>
+      <Decimal label="U128" details={details.decimal_128} />
 
       <Divider />
 
       <div className="space-y-2">
-        <Label>Binary</Label>
+        <Label>BINARY</Label>
         <div className="flex gap-1">
           {details.binary.split("").map((bit, i) => (
             <div
@@ -82,10 +54,25 @@ export const ByteDetails = () => {
   );
 };
 
+type DecimalProps = {
+  details: DecimalDetail | null;
+  label: string;
+};
+
+const Decimal = ({ label, details }: DecimalProps) => (
+  <div className="space-y-1.5">
+    <Label>
+      {label} ({details?.hex})
+    </Label>
+    <Row label="BE" value={details?.be ?? null} />
+    <Row label="LE" value={details?.le ?? null} />
+  </div>
+);
+
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+  <span className="text-xs text-muted-foreground tracking-wider mb-1">
     {children}
-  </p>
+  </span>
 );
 
 const Row = ({ label, value }: { label: string; value: string | null }) => (
