@@ -3,13 +3,13 @@ use crate::{
     state::{AppState, Focus},
     ui::UiSentinel,
 };
-use engine::TypeInfo;
+use engine::DecimalDetail;
 use ratatui::{
     Frame,
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::{Line, Span, Text},
+    text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Widget},
 };
 
@@ -53,22 +53,22 @@ pub fn render(
     let used = render_ascii_section(&mut buffer, area, &details.ascii_symbol);
     area = go_next(area, used);
 
-    let used = render_section(&mut buffer, area, "u8", details.u8());
+    let used = render_section(&mut buffer, area, "u8", &details.decimal_8);
     area = go_next(area, used);
 
-    if let Some(info) = details.u16() {
+    if let Some(info) = &details.decimal_16 {
         let used = render_section(&mut buffer, area, "u16", info);
         area = go_next(area, used);
     }
-    if let Some(info) = details.u32() {
+    if let Some(info) = &details.decimal_32 {
         let used = render_section(&mut buffer, area, "u32", info);
         area = go_next(area, used);
     }
-    if let Some(info) = details.u64() {
+    if let Some(info) = &details.decimal_64 {
         let used = render_section(&mut buffer, area, "u64", info);
         area = go_next(area, used);
     }
-    if !compact_mode && let Some(info) = details.u128() {
+    if !compact_mode && let Some(info) = &details.decimal_128 {
         let used = render_section(&mut buffer, area, "u128", info);
         area = go_next(area, used);
     }
@@ -108,7 +108,7 @@ fn render_section(
     buffer: &mut Buffer,
     area: Rect,
     title: &str,
-    type_info: TypeInfo,
+    detail: &DecimalDetail,
 ) -> LinesRendered {
     let [title_area, bytes_area, divider_area] = Layout::vertical([
         Constraint::Length(1),
@@ -117,15 +117,19 @@ fn render_section(
     ])
     .areas(area);
 
-    Text::from(title).bold().render(title_area, buffer);
+    Line::from(vec![
+        Span::from(title).bold(),
+        Span::from(format!(" ({})", detail.hex)),
+    ])
+    .render(title_area, buffer);
 
     let [left, right] =
         Layout::horizontal([Constraint::Length(2), Constraint::Fill(1)]).areas(bytes_area);
 
     Paragraph::new(vec![Line::from("BE").italic(), Line::from("LE").italic()]).render(left, buffer);
     Paragraph::new(vec![
-        Line::from(type_info.be_decimal).right_aligned(),
-        Line::from(type_info.le_decimal).right_aligned(),
+        Line::from(detail.be.as_str()).right_aligned(),
+        Line::from(detail.le.as_str()).right_aligned(),
     ])
     .render(right, buffer);
     ratatui::symbols::line::HORIZONTAL
