@@ -44,7 +44,10 @@ type FileState = {
   error: Error | null;
   selectedByteOffset: number | null;
   byteDetails: ByteDetails | null;
+  highlightedExtraBytes: number | null;
   selectByte: (offset: number) => void;
+  highlightBytes: (offset: number, numberOfBytes: number) => void;
+  resetHighlightBytes: () => void;
   clearSelectedByte: () => void;
   loadFiles: () => Promise<void>;
   addFile: (file: FileStorageData) => Promise<void>;
@@ -66,6 +69,7 @@ export const useFileStore = create<FileState>((set, get) => ({
   loading: true,
   error: null,
   selectedByteOffset: null,
+  highlightedExtraBytes: null,
   byteDetails: null,
   selectByte: (offset: number) => {
     const { rawBytes, selectedByteOffset: selectedByte } = get();
@@ -76,6 +80,16 @@ export const useFileStore = create<FileState>((set, get) => ({
     }
     const result = details(rawBytes, offset) as ByteDetails;
     set({ selectedByteOffset: offset, byteDetails: result });
+  },
+  highlightBytes: (offset: number, numberOfBytes) => {
+    const endHighlight = offset + numberOfBytes - 1;
+    const bytes = get().rawBytes;
+    if (bytes && endHighlight < bytes.length) {
+      set({ highlightedExtraBytes: endHighlight });
+    }
+  },
+  resetHighlightBytes: () => {
+    set({ highlightedExtraBytes: null });
   },
   clearSelectedByte: () => set({ selectedByteOffset: null, byteDetails: null }),
   loadFiles: async () => {

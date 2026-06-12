@@ -71,15 +71,32 @@ type CellProps = {
 
 const Cell = ({ index, value, className }: CellProps) => {
   const selectedByte = useFileStore((x) => x.selectedByteOffset == index);
+  const isHighlighted = useFileStore((x) => {
+    if (x.highlightedExtraBytes === null) {
+      return false;
+    }
+
+    if (x.selectedByteOffset === null) {
+      return false;
+    }
+
+    return index <= x.highlightedExtraBytes && index >= x.selectedByteOffset;
+  });
+
   const selectByte = useFileStore((x) => x.selectByte);
+
+  const selectedClassName = "bg-blue-500/20 text-blue-700 dark:text-blue-300";
+  const higlightedClassName = "bg-blue-100/20 text-blue-500 dark:text-blue-300";
   return (
     <span
       key={index}
       onClick={() => selectByte(index)}
       className={`${className} text-center cursor-pointer select-none rounded-sm ${
         selectedByte
-          ? "bg-blue-500/20 text-blue-700 dark:text-blue-300"
-          : "hover:bg-accent"
+          ? selectedClassName
+          : isHighlighted
+            ? higlightedClassName
+            : "hover:bg-accent"
       }`}
     >
       {value}
