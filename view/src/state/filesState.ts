@@ -19,20 +19,10 @@ export type DecimalDetail = {
 export type ByteDetails = {
   binary: string;
   decimal_8: DecimalDetail;
-  be_decimal_8: string;
-  le_decimal_8: string;
   decimal_16: DecimalDetail | null;
-  be_decimal_16: string | null;
-  le_decimal_16: string | null;
   decimal_32: DecimalDetail | null;
-  be_decimal_32: string | null;
-  le_decimal_32: string | null;
   decimal_64: DecimalDetail | null;
-  be_decimal_64: string | null;
-  le_decimal_64: string | null;
   decimal_128: DecimalDetail | null;
-  be_decimal_128: string | null;
-  le_decimal_128: string | null;
   ascii_symbol: string;
 };
 

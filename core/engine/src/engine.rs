@@ -37,26 +37,6 @@ pub fn read(file_bytes: &[u8], from_byte: u32, length: u32) -> Vec<FileRow> {
 #[derive(Serialize)]
 pub struct Details {
     pub binary: String,
-    #[deprecated(note = "use decimal_8.be")]
-    pub be_decimal_8: String,
-    #[deprecated(note = "use decimal_8.le")]
-    pub le_decimal_8: String,
-    #[deprecated(note = "use decimal_16.be")]
-    pub be_decimal_16: Option<String>,
-    #[deprecated(note = "use decimal_16.le")]
-    pub le_decimal_16: Option<String>,
-    #[deprecated(note = "use decimal_32.be")]
-    pub be_decimal_32: Option<String>,
-    #[deprecated(note = "use decimal_32.le")]
-    pub le_decimal_32: Option<String>,
-    #[deprecated(note = "use decimal_64.be")]
-    pub be_decimal_64: Option<String>,
-    #[deprecated(note = "use decimal_64.le")]
-    pub le_decimal_64: Option<String>,
-    #[deprecated(note = "use decimal_128.be")]
-    pub be_decimal_128: Option<String>,
-    #[deprecated(note = "use decimal_128.le")]
-    pub le_decimal_128: Option<String>,
     pub ascii_symbol: String,
     pub decimal_8: DecimalDetail,
     pub decimal_16: Option<DecimalDetail>,
@@ -101,16 +81,6 @@ pub fn details(file_bytes: &[u8], from_byte: u32) -> Details {
 
     Details {
         binary: format!("{:08b}", current_byte),
-        be_decimal_8: u8_details.0.to_string(),
-        le_decimal_8: u8_details.1.to_string(),
-        be_decimal_16: u16_details.map(|x| x.0.to_string()),
-        le_decimal_16: u16_details.map(|x| x.1.to_string()),
-        be_decimal_32: u32_details.map(|x| x.0.to_string()),
-        le_decimal_32: u32_details.map(|x| x.1.to_string()),
-        be_decimal_64: u64_details.map(|x| x.0.to_string()),
-        le_decimal_64: u64_details.map(|x| x.1.to_string()),
-        be_decimal_128: u128_details.map(|x| x.0.to_string()),
-        le_decimal_128: u128_details.map(|x| x.1.to_string()),
         ascii_symbol: ascii_symbol(current_byte),
         decimal_8: DecimalDetail {
             be: u8_details.0.to_string(),
