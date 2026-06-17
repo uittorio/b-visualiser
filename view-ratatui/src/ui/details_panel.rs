@@ -3,7 +3,7 @@ use crate::{
     state::{AppState, Focus},
     ui::UiSentinel,
 };
-use engine::DecimalDetail;
+use engine::{DecimalDetail, Utf8Detail};
 use ratatui::{
     Frame,
     buffer::Buffer,
@@ -53,6 +53,9 @@ pub fn render(
     let used = render_ascii_section(&mut buffer, area, &details.ascii_symbol);
     area = go_next(area, used);
 
+    let used = render_utf8_section(&mut buffer, area, &details.utf8);
+    area = go_next(area, used);
+
     let used = render_section(&mut buffer, area, "u8", &details.decimal_8);
     area = go_next(area, used);
 
@@ -96,6 +99,44 @@ fn render_ascii_section(buffer: &mut Buffer, area: Rect, ascii: &str) -> LinesRe
     ])
     .render(left, buffer);
     Paragraph::new(vec![Line::from(""), Line::from(ascii).right_aligned()]).render(right, buffer);
+
+    ratatui::symbols::line::HORIZONTAL
+        .repeat(divider_area.width as usize)
+        .render(divider_area, buffer);
+
+    LinesRendered(3)
+}
+
+fn render_utf8_section(
+    buffer: &mut Buffer,
+    area: Rect,
+    utf8: &Option<Utf8Detail>,
+) -> LinesRendered {
+    let [top_area, divider_area] =
+        Layout::vertical([Constraint::Length(2), Constraint::Length(1)]).areas(area);
+    let [left, right] =
+        Layout::horizontal([Constraint::Fill(1), Constraint::Length(2)]).areas(top_area);
+    if let Some(utf8) = utf8 {
+        Paragraph::new(vec![
+            Line::from(vec![
+                Span::from("UTF8").bold(),
+                Span::from(format!(" ({})", utf8.hex)),
+            ]),
+            Line::from("Symbol").italic(),
+        ])
+        .render(left, buffer);
+        Paragraph::new(vec![
+            Line::from(""),
+            Line::from(utf8.value.as_str()).right_aligned(),
+        ])
+        .render(right, buffer);
+    } else {
+        Paragraph::new(vec![
+            Line::from("UTF8").bold(),
+            Line::from("Symbol").italic(),
+        ])
+        .render(left, buffer);
+    }
 
     ratatui::symbols::line::HORIZONTAL
         .repeat(divider_area.width as usize)
