@@ -16,6 +16,13 @@ export type DecimalDetail = {
   hex: string;
 };
 
+export type Utf8Detail = {
+  value: string;
+  byte_start: number;
+  byte_end: number;
+  hex: string;
+};
+
 export type ByteDetails = {
   binary: string;
   decimal_8: DecimalDetail;
@@ -24,6 +31,7 @@ export type ByteDetails = {
   decimal_64: DecimalDetail | null;
   decimal_128: DecimalDetail | null;
   ascii_symbol: string;
+  utf8?: Utf8Detail;
 };
 
 type FileState = {
@@ -34,9 +42,9 @@ type FileState = {
   error: Error | null;
   selectedByteOffset: number | null;
   byteDetails: ByteDetails | null;
-  highlightedExtraBytes: number | null;
+  bytesHighlightedRange: [number, number] | null;
   selectByte: (offset: number) => void;
-  highlightBytes: (offset: number, numberOfBytes: number) => void;
+  highlightExtraBytes: (start: number, end: number) => void;
   resetHighlightBytes: () => void;
   clearSelectedByte: () => void;
   loadFiles: () => Promise<void>;
@@ -59,7 +67,7 @@ export const useFileStore = create<FileState>((set, get) => ({
   loading: true,
   error: null,
   selectedByteOffset: null,
-  highlightedExtraBytes: null,
+  bytesHighlightedRange: null,
   byteDetails: null,
   selectByte: (offset: number) => {
     const { rawBytes, selectedByteOffset: selectedByte } = get();
@@ -71,15 +79,11 @@ export const useFileStore = create<FileState>((set, get) => ({
     const result = details(rawBytes, offset) as ByteDetails;
     set({ selectedByteOffset: offset, byteDetails: result });
   },
-  highlightBytes: (offset: number, numberOfBytes) => {
-    const endHighlight = offset + numberOfBytes - 1;
-    const bytes = get().rawBytes;
-    if (bytes && endHighlight < bytes.length) {
-      set({ highlightedExtraBytes: endHighlight });
-    }
+  highlightExtraBytes: (start: number, end: number) => {
+    set({ bytesHighlightedRange: [start, end] });
   },
   resetHighlightBytes: () => {
-    set({ highlightedExtraBytes: null });
+    set({ bytesHighlightedRange: null });
   },
   clearSelectedByte: () => set({ selectedByteOffset: null, byteDetails: null }),
   loadFiles: async () => {

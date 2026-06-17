@@ -3,7 +3,7 @@ import { DecimalDetail, useFileStore } from "../../state/filesState";
 export const ByteDetails = () => {
   const selectedByte = useFileStore((x) => x.selectedByteOffset);
   const details = useFileStore((x) => x.byteDetails);
-  const highlightBytes = useFileStore((x) => x.highlightBytes);
+  const highlightExtraBytes = useFileStore((x) => x.highlightExtraBytes);
   const resetHighlightBytes = useFileStore((x) => x.resetHighlightBytes);
 
   if (selectedByte === null || !details) {
@@ -23,49 +23,78 @@ export const ByteDetails = () => {
 
       <Divider />
 
+      <button
+        className="w-full text-left cursor-pointer space-y-2"
+        onBlur={resetHighlightBytes}
+        onMouseLeave={resetHighlightBytes}
+        onFocus={() => {
+          if (details.utf8) {
+            return highlightExtraBytes(
+              details.utf8.byte_start,
+              details.utf8.byte_end,
+            );
+          }
+        }}
+        onMouseEnter={() => {
+          if (details.utf8) {
+            return highlightExtraBytes(
+              details.utf8.byte_start,
+              details.utf8.byte_end,
+            );
+          }
+        }}
+      >
+        <Label>UTF8 ({details.utf8?.hex})</Label>
+        <Row label="" value={details.utf8?.value ?? null} />
+      </button>
+
+      <Divider />
+
       <Decimal
         label="U8"
         details={details.decimal_8}
-        onFocus={() => highlightBytes(selectedByte, 1)}
+        onFocus={() => highlightExtraBytes(selectedByte, selectedByte)}
         onBlur={resetHighlightBytes}
         onMouseLeave={resetHighlightBytes}
-        onMouseEnter={() => highlightBytes(selectedByte, 1)}
+        onMouseEnter={() => highlightExtraBytes(selectedByte, selectedByte)}
       />
       <Divider />
       <Decimal
         label="U16"
         details={details.decimal_16}
-        onFocus={() => highlightBytes(selectedByte, 2)}
+        onFocus={() => highlightExtraBytes(selectedByte, selectedByte + 1)}
         onBlur={resetHighlightBytes}
         onMouseLeave={resetHighlightBytes}
-        onMouseEnter={() => highlightBytes(selectedByte, 2)}
+        onMouseEnter={() => highlightExtraBytes(selectedByte, selectedByte + 1)}
       />
       <Divider />
       <Decimal
         label="U32"
         details={details.decimal_32}
-        onFocus={() => highlightBytes(selectedByte, 4)}
+        onFocus={() => highlightExtraBytes(selectedByte, selectedByte + 3)}
         onBlur={resetHighlightBytes}
         onMouseLeave={resetHighlightBytes}
-        onMouseEnter={() => highlightBytes(selectedByte, 4)}
+        onMouseEnter={() => highlightExtraBytes(selectedByte, selectedByte + 3)}
       />
       <Divider />
       <Decimal
         label="U64"
         details={details.decimal_64}
-        onFocus={() => highlightBytes(selectedByte, 8)}
+        onFocus={() => highlightExtraBytes(selectedByte, selectedByte + 7)}
         onBlur={resetHighlightBytes}
         onMouseLeave={resetHighlightBytes}
-        onMouseEnter={() => highlightBytes(selectedByte, 8)}
+        onMouseEnter={() => highlightExtraBytes(selectedByte, selectedByte + 7)}
       />
       <Divider />
       <Decimal
         label="U128"
         details={details.decimal_128}
-        onFocus={() => highlightBytes(selectedByte, 10)}
+        onFocus={() => highlightExtraBytes(selectedByte, selectedByte + 15)}
         onBlur={resetHighlightBytes}
         onMouseLeave={resetHighlightBytes}
-        onMouseEnter={() => highlightBytes(selectedByte, 16)}
+        onMouseEnter={() =>
+          highlightExtraBytes(selectedByte, selectedByte + 15)
+        }
       />
 
       <Divider />

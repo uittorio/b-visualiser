@@ -72,15 +72,13 @@ type CellProps = {
 const Cell = ({ index, value, className }: CellProps) => {
   const selectedByte = useFileStore((x) => x.selectedByteOffset == index);
   const isHighlighted = useFileStore((x) => {
-    if (x.highlightedExtraBytes === null) {
+    if (x.bytesHighlightedRange === null) {
       return false;
     }
 
-    if (x.selectedByteOffset === null) {
-      return false;
-    }
-
-    return index <= x.highlightedExtraBytes && index >= x.selectedByteOffset;
+    return (
+      index >= x.bytesHighlightedRange[0] && index <= x.bytesHighlightedRange[1]
+    );
   });
 
   const selectByte = useFileStore((x) => x.selectByte);
